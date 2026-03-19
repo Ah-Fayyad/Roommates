@@ -42,7 +42,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, initi
 
     return (
         <div className="h-[300px] w-full overflow-hidden rounded-xl border-2 border-gray-200 dark:border-gray-700">
-            <MapContainer center={center} zoom={13} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+            <MapContainer center={center} zoom={13} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

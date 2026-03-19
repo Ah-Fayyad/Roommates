@@ -1,46 +1,33 @@
 {
-  "name": "roommates-frontend",
-  "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "lint": "eslint .",
-    "type-check": "tsc --noEmit",
-    "check-translations": "node check_translations.cjs",
-    "clean-locales": "node clean_locales.cjs"
-  },
-    "dependencies": {
-        "@hookform/resolvers": "^5.2.2",
-        "@react-oauth/google": "^0.13.4",
-        "@types/leaflet": "^1.9.21",
-        "axios": "^1.6.7",
-        "clsx": "^2.1.0",
-        "framer-motion": "^11.0.8",
-        "i18next": "^23.10.0",
-        "leaflet": "^1.9.4",
-        "lucide-react": "^0.344.0",
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1",
-        "react-hook-form": "^7.51.0",
-        "react-i18next": "^14.0.5",
-        "react-leaflet": "^4.2.1",
-        "react-router-dom": "6.20.0",
-        "socket.io-client": "^4.7.4",
-        "tailwind-merge": "^2.2.1",
-        "zod": "^3.22.4"
+    "name": "roommates-platform",
+    "version": "1.0.0",
+    "description": "AI-powered roommate matching platform",
+    "scripts": {
+        "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+        "dev:backend": "cd backend && npm run dev",
+        "dev:frontend": "cd frontend && npm run dev",
+        "build": "npm run build:backend && npm run build:frontend",
+        "build:backend": "cd backend && npm run build",
+        "build:frontend": "cd frontend && npm run build",
+        "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+        "db:push": "cd backend && npx prisma db push",
+        "db:studio": "cd backend && npx prisma studio",
+        "db:generate": "cd backend && npx prisma generate"
     },
+    "keywords": [
+        "roommates",
+        "housing",
+        "matching",
+        "ai",
+        "real-time",
+        "chat"
+    ],
+    "author": "Ahmed",
+    "license": "MIT",
     "devDependencies": {
-        "@types/node": "^24.10.1",
-        "@types/react": "^19.2.7",
-        "@types/react-dom": "^19.2.3",
-        "@vitejs/plugin-react": "^5.1.1",
-        "autoprefixer": "^10.4.18",
-        "postcss": "^8.4.35",
-        "tailwindcss": "^3.4.1",
-        "typescript": "^5.2.2",
-        "vite": "^5.1.4"
+        "concurrently": "^8.2.2"
+    },
+    "dependencies": {
+        "react-router-dom": "^6.20.0"
     }
 }

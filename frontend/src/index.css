@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    direction: ltr !important;
+  }
+
   :root {
     --primary: #6366f1;
     --primary-dark: #4f46e5;
@@ -13,8 +17,19 @@
     --warning: #f59e0b;
     --error: #ef4444;
 
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-family:
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      "Roboto",
+      "Oxygen",
+      "Ubuntu",
+      "Cantarell",
+      "Fira Sans",
+      "Droid Sans",
+      "Helvetica Neue",
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -30,7 +45,6 @@
 }
 
 @layer components {
-
   /* Gradient backgrounds */
   .gradient-primary {
     @apply bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500;
@@ -45,6 +59,10 @@
     @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50;
   }
 
+  .glass-heavy {
+    @apply bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-gray-200 dark:border-white/10 shadow-2xl;
+  }
+
   /* Card hover effects */
   .card-hover {
     @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02];
@@ -56,7 +74,7 @@
   }
 
   .btn-animate::before {
-    content: '';
+    content: "";
     @apply absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300;
   }
 
@@ -70,7 +88,7 @@
   }
 
   .shimmer::after {
-    content: '';
+    content: "";
     @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full;
     animation: shimmer 2s infinite;
   }
@@ -82,7 +100,6 @@
 }
 
 @layer utilities {
-
   /* Custom animations */
   @keyframes shimmer {
     100% {
@@ -125,7 +142,6 @@
   }
 
   @keyframes float {
-
     0%,
     100% {
       transform: translateY(0);
@@ -137,19 +153,50 @@
   }
 
   .animate-fadeInUp {
-    animation: fadeInUp 0.6s ease-out;
+    animation: fadeInUp 0.6s ease-out forwards;
   }
 
   .animate-fadeIn {
-    animation: fadeIn 0.8s ease-out;
+    animation: fadeIn 0.8s ease-out forwards;
   }
 
   .animate-slideInRight {
-    animation: slideInRight 0.6s ease-out;
+    animation: slideInRight 0.6s ease-out forwards;
   }
 
   .animate-float {
     animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(100px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   /* Stagger animations */

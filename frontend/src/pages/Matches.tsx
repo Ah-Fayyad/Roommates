@@ -2,115 +2,46 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Heart, MessageCircle, MapPin, Star, Sparkles, TrendingUp, Users, Zap } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/constants';
+import { useTranslation } from 'react-i18next';
 
 interface Match {
-    id: string;
-    name: string;
-    age: number;
-    university: string;
-    major: string;
-    bio: string;
-    image: string;
-    matchScore: number;
-    compatibility: {
-        lifestyle: number;
-        cleanliness: number;
-        schedule: number;
-        budget: number;
-        interests: number;
+    user: {
+        id: string;
+        fullName: string;
+        avatar: string;
+        university: string;
+        bio: string;
+        isVerified: boolean;
     };
-    topMatches: string[];
-    verified: boolean;
+    score: number;
+    insights: string[];
 }
 
 const Matches = () => {
+    const { t } = useTranslation();
+    const { token } = useAuth();
     const [matches, setMatches] = useState<Match[]>([]);
     const [isCalculating, setIsCalculating] = useState(true);
 
-    // Simulate AI calculation
     useEffect(() => {
-        setTimeout(() => {
-            setMatches([
-                {
-                    id: '1',
-                    name: 'Sarah Johnson',
-                    age: 22,
-                    university: 'Stanford University',
-                    major: 'Computer Science',
-                    bio: 'Clean, organized, and friendly. Love studying in quiet environments.',
-                    image: 'https://i.pravatar.cc/300?img=1',
-                    matchScore: 95,
-                    compatibility: {
-                        lifestyle: 98,
-                        cleanliness: 95,
-                        schedule: 92,
-                        budget: 94,
-                        interests: 96
-                    },
-                    topMatches: ['Study habits', 'Cleanliness', 'Budget'],
-                    verified: true
-                },
-                {
-                    id: '2',
-                    name: 'Emily Chen',
-                    age: 21,
-                    university: 'MIT',
-                    major: 'Engineering',
-                    bio: 'Early bird, loves cooking and keeping things tidy.',
-                    image: 'https://i.pravatar.cc/300?img=5',
-                    matchScore: 88,
-                    compatibility: {
-                        lifestyle: 85,
-                        cleanliness: 90,
-                        schedule: 88,
-                        budget: 87,
-                        interests: 90
-                    },
-                    topMatches: ['Schedule', 'Cooking', 'Cleanliness'],
-                    verified: true
-                },
-                {
-                    id: '3',
-                    name: 'Jessica Martinez',
-                    age: 23,
-                    university: 'Harvard',
-                    major: 'Business',
-                    bio: 'Social but respectful of personal space. Non-smoker.',
-                    image: 'https://i.pravatar.cc/300?img=9',
-                    matchScore: 82,
-                    compatibility: {
-                        lifestyle: 80,
-                        cleanliness: 85,
-                        schedule: 78,
-                        budget: 88,
-                        interests: 79
-                    },
-                    topMatches: ['Budget', 'Social life', 'Lifestyle'],
-                    verified: false
-                },
-                {
-                    id: '4',
-                    name: 'Amanda Lee',
-                    age: 20,
-                    university: 'UCLA',
-                    major: 'Psychology',
-                    bio: 'Quiet, studious, and organized. Prefer minimal guests.',
-                    image: 'https://i.pravatar.cc/300?img=16',
-                    matchScore: 79,
-                    compatibility: {
-                        lifestyle: 82,
-                        cleanliness: 88,
-                        schedule: 75,
-                        budget: 76,
-                        interests: 74
-                    },
-                    topMatches: ['Study environment', 'Quiet hours', 'Organization'],
-                    verified: true
-                }
-            ]);
-            setIsCalculating(false);
-        }, 2000);
-    }, []);
+        const fetchMatches = async () => {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/matches`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setMatches(response.data);
+            } catch (error) {
+                console.error('Failed to fetch matches', error);
+            } finally {
+                setIsCalculating(false);
+            }
+        };
+
+        if (token) fetchMatches();
+    }, [token]);
 
     const getScoreColor = (score: number) => {
         if (score >= 90) return 'text-green-600 dark:text-green-400';
@@ -134,10 +65,10 @@ const Matches = () => {
                         <Sparkles className="h-10 w-10 text-white" />
                     </div>
                     <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                        AI is Finding Your Perfect Matches
+                        {t('finding_matches')}
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400">
-                        Analyzing compatibility based on your preferences...
+                        {t('analyzing_compatibility')}
                     </p>
                     <div className="mt-6 flex justify-center gap-2">
                         <div className="h-3 w-3 animate-bounce rounded-full bg-indigo-600" style={{ animationDelay: '0ms' }}></div>
@@ -156,40 +87,34 @@ const Matches = () => {
                 <div className="mb-8 animate-fadeInUp">
                     <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 px-4 py-2 text-sm font-semibold text-white shadow-lg">
                         <Sparkles className="h-4 w-4" />
-                        <span>AI-Powered Matching</span>
+                        <span>{t('ai_powered_matching')}</span>
                     </div>
                     <h1 className="mb-2 text-4xl font-bold text-gray-900 dark:text-white">
-                        Your Perfect Matches
+                        {t('your_perfect_matches')}
                     </h1>
                     <p className="text-lg text-gray-600 dark:text-gray-400">
-                        Found {matches.length} compatible roommates based on your preferences
+                        {t('found_matches_desc', { count: matches.length })}
                     </p>
                 </div>
 
-                {/* AI Insights */}
+                {/* AI Insights Summary */}
                 <div className="glass animate-fadeInUp stagger-1 mb-8 rounded-2xl p-6">
                     <div className="mb-4 flex items-center gap-2">
                         <Zap className="h-5 w-5 text-yellow-500" />
-                        <h3 className="font-bold text-gray-900 dark:text-white">AI Insights</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white">{t('ai_compatibility_overview')}</h3>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-3">
+                    <div className="grid gap-4 md:grid-cols-2">
                         <div className="rounded-xl bg-indigo-50 p-4 dark:bg-indigo-900/20">
                             <div className="mb-1 text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                                {matches.filter(m => m.matchScore >= 90).length}
+                                {matches.filter(m => m.score >= 75).length}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">Excellent Matches (90%+)</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">{t('great_matches')}</div>
                         </div>
                         <div className="rounded-xl bg-purple-50 p-4 dark:bg-purple-900/20">
                             <div className="mb-1 text-2xl font-bold text-purple-600 dark:text-purple-400">
-                                {matches.filter(m => m.verified).length}
+                                {matches.length > 0 ? Math.round(matches.reduce((acc, m) => acc + m.score, 0) / matches.length) : 0}%
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">Verified Profiles</div>
-                        </div>
-                        <div className="rounded-xl bg-pink-50 p-4 dark:bg-pink-900/20">
-                            <div className="mb-1 text-2xl font-bold text-pink-600 dark:text-pink-400">
-                                {Math.round(matches.reduce((acc, m) => acc + m.matchScore, 0) / matches.length)}%
-                            </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">Average Compatibility</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">{t('average_match_score')}</div>
                         </div>
                     </div>
                 </div>
@@ -198,7 +123,7 @@ const Matches = () => {
                 <div className="grid gap-6 lg:grid-cols-2">
                     {matches.map((match, index) => (
                         <div
-                            key={match.id}
+                            key={match.user.id}
                             className="card-hover glass animate-fadeInUp overflow-hidden rounded-2xl"
                             style={{ animationDelay: `${index * 0.1}s` }}
                         >
@@ -206,24 +131,23 @@ const Matches = () => {
                                 {/* Image */}
                                 <div className="relative h-64 md:h-auto md:w-48">
                                     <img
-                                        src={match.image}
-                                        alt={match.name}
+                                        src={match.user.avatar || 'https://images.unsplash.com/photo-1535711861845-e1fc4c208451?q=80&w=400'}
+                                        alt={match.user.fullName}
                                         className="h-full w-full object-cover"
                                     />
-                                    {match.verified && (
+                                    {match.user.isVerified && (
                                         <div className="absolute right-3 top-3 rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white shadow-lg">
-                                            ✓ Verified
+                                            ✓ {t('verified')}
                                         </div>
                                     )}
-                                    {/* Match Score Badge */}
-                                    <div className={`absolute bottom-3 left-3 rounded-xl ${getScoreBgColor(match.matchScore)} px-4 py-2 backdrop-blur-sm`}>
+                                    <div className={`absolute bottom-3 left-3 rounded-xl ${getScoreBgColor(match.score)} px-4 py-2 backdrop-blur-sm`}>
                                         <div className="flex items-center gap-2">
-                                            <TrendingUp className={`h-5 w-5 ${getScoreColor(match.matchScore)}`} />
-                                            <span className={`text-2xl font-bold ${getScoreColor(match.matchScore)}`}>
-                                                {match.matchScore}%
+                                            <TrendingUp className={`h-5 w-5 ${getScoreColor(match.score)}`} />
+                                            <span className={`text-2xl font-bold ${getScoreColor(match.score)}`}>
+                                                {match.score}%
                                             </span>
                                         </div>
-                                        <div className="text-xs text-gray-600 dark:text-gray-400">Match Score</div>
+                                        <div className="text-xs text-gray-600 dark:text-gray-400">{t('match_score')}</div>
                                     </div>
                                 </div>
 
@@ -231,72 +155,41 @@ const Matches = () => {
                                 <div className="flex-1 p-6">
                                     <div className="mb-4">
                                         <h3 className="mb-1 text-2xl font-bold text-gray-900 dark:text-white">
-                                            {match.name}, {match.age}
+                                            {match.user.fullName}
                                         </h3>
                                         <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
-                                            {match.major} • {match.university}
+                                            {match.user.university}
                                         </p>
-                                        <p className="text-gray-700 dark:text-gray-300">{match.bio}</p>
+                                        <p className="text-gray-700 dark:text-gray-300 italic">"{match.user.bio}"</p>
                                     </div>
 
-                                    {/* Compatibility Breakdown */}
-                                    <div className="mb-4">
-                                        <div className="mb-2 flex items-center gap-2">
+                                    {/* AI Insights & Detailed Analysis */}
+                                    <div className="mb-4 space-y-3">
+                                        <div className="flex items-center gap-2">
                                             <Sparkles className="h-4 w-4 text-purple-500" />
-                                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                AI Compatibility Analysis
+                                            <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
+                                                {t('ai_compatibility_logic')}
                                             </span>
                                         </div>
                                         <div className="space-y-2">
-                                            {Object.entries(match.compatibility).map(([key, value]) => (
-                                                <div key={key} className="flex items-center gap-2">
-                                                    <div className="w-24 text-xs capitalize text-gray-600 dark:text-gray-400">
-                                                        {key}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                                                            <div
-                                                                className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
-                                                                style={{ width: `${value}%` }}
-                                                            ></div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="w-10 text-right text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                                        {value}%
-                                                    </div>
+                                            {match.insights.map((insight, idx) => (
+                                                <div key={idx} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                                    <div className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-indigo-500"></div>
+                                                    {insight}
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Top Matches */}
-                                    <div className="mb-4">
-                                        <div className="mb-2 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                            Top Compatibility Factors:
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {match.topMatches.map((factor, idx) => (
-                                                <span
-                                                    key={idx}
-                                                    className="rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 px-3 py-1 text-xs font-medium text-white"
-                                                >
-                                                    ✓ {factor}
-                                                </span>
                                             ))}
                                         </div>
                                     </div>
 
                                     {/* Actions */}
                                     <div className="flex gap-2">
-                                        <Link to={`/chat/${match.id}`} className="flex-1">
+                                        <Link to={`/chat/${match.user.id}`} className="flex-1">
                                             <Button variant="gradient" className="w-full">
                                                 <MessageCircle className="mr-2 h-4 w-4" />
-                                                Message
+                                                {t('start_conversation')}
                                             </Button>
                                         </Link>
-                                        <Button variant="outline" size="icon">
-                                            <Heart className="h-5 w-5" />
-                                        </Button>
+
                                     </div>
                                 </div>
                             </div>
@@ -311,14 +204,14 @@ const Matches = () => {
                             <Users className="h-10 w-10 text-gray-400" />
                         </div>
                         <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
-                            No matches yet
+                            {t('no_matches_yet')}
                         </h3>
                         <p className="mb-6 text-gray-600 dark:text-gray-400">
-                            Complete your profile to get AI-powered roommate recommendations
+                            {t('complete_profile_desc_matches')}
                         </p>
                         <Link to="/profile">
                             <Button variant="gradient">
-                                Complete Profile
+                                {t('complete_profile')}
                             </Button>
                         </Link>
                     </div>

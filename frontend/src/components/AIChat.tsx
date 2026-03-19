@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import { Button } from '../components/ui/Button';
 import { Send, Bot, User, Sparkles, X, Minimize2, Maximize2 } from 'lucide-react';
+import axios from 'axios';
+import { API_BASE_URL } from '../config/constants';
 
 interface Message {
     id: string;
@@ -9,11 +13,13 @@ interface Message {
     timestamp: Date;
 }
 
+
 const AIChat = () => {
+    const { t, i18n } = useTranslation();
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
-            text: 'Hello! I\'m your AI roommate assistant. I can help you find the perfect roommate, answer questions about listings, or provide advice about living with roommates. How can I help you today?',
+            text: t('ai_welcome_message'),
             sender: 'bot',
             timestamp: new Date()
         }
@@ -31,11 +37,26 @@ const AIChat = () => {
         scrollToBottom();
     }, [messages]);
 
+
+    // Update welcome message when language changes if it's the only message
+    useEffect(() => {
+        if (messages.length === 1 && messages[0].id === '1') {
+            setMessages([{
+                id: '1',
+                text: t('ai_welcome_message'),
+                sender: 'bot',
+                timestamp: new Date()
+            }]);
+        }
+    }, [i18n.language]);
+
+    // ...
+
     const quickQuestions = [
-        "How do I find a compatible roommate?",
-        "What should I ask a potential roommate?",
-        "Tips for living with roommates",
-        "How to split bills fairly?"
+        t('qq_find_roommate'),
+        t('qq_ask_roommate'),
+        t('qq_living_tips'),
+        t('qq_split_bills')
     ];
 
     const getBotResponse = (userMessage: string): string => {
@@ -82,17 +103,36 @@ const AIChat = () => {
         setInput('');
         setIsLoading(true);
 
-        // Simulate AI thinking
-        setTimeout(() => {
+        try {
+            // Call backend AI API
+            const response = await axios.post(`${API_BASE_URL}/ai/chat`, {
+                message: input,
+                conversationHistory: messages.map(m => ({
+                    role: m.sender === 'user' ? 'user' : 'assistant',
+                    content: m.text
+                }))
+            });
+
             const botResponse: Message = {
                 id: (Date.now() + 1).toString(),
-                text: getBotResponse(input),
+                text: response.data.message,
                 sender: 'bot',
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, botResponse]);
+        } catch (error) {
+            console.error('AI Chat Error:', error);
+            // Fallback to error message
+            const errorResponse: Message = {
+                id: (Date.now() + 1).toString(),
+                text: "I apologize, but I'm having trouble connecting right now. Please try again later.",
+                sender: 'bot',
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorResponse]);
+        } finally {
             setIsLoading(false);
-        }, 1000);
+        }
     };
 
     const handleQuickQuestion = (question: string) => {
@@ -123,8 +163,8 @@ const AIChat = () => {
                         <div className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white bg-green-500"></div>
                     </div>
                     <div>
-                        <h3 className="font-bold">AI Assistant</h3>
-                        <p className="text-xs text-white/80">Always here to help</p>
+                        <h3 className="font-bold">{t('ai_assistant')}</h3>
+                        <p className="text-xs text-white/80">{t('always_here_to_help')}</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -146,8 +186,8 @@ const AIChat = () => {
                             }`}
                     >
                         <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${message.sender === 'bot'
-                                ? 'bg-gradient-to-r from-indigo-500 to-purple-500'
-                                : 'bg-gray-200 dark:bg-gray-700'
+                            ? 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                            : 'bg-gray-200 dark:bg-gray-700'
                             }`}>
                             {message.sender === 'bot' ? (
                                 <Bot className="h-5 w-5 text-white" />
@@ -156,13 +196,13 @@ const AIChat = () => {
                             )}
                         </div>
                         <div className={`max-w-[75%] rounded-2xl px-4 py-3 ${message.sender === 'bot'
-                                ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
-                                : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                            ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
+                            : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
                             }`}>
                             <p className="whitespace-pre-line text-sm leading-relaxed">{message.text}</p>
                             <p className={`mt-1 text-xs ${message.sender === 'bot'
-                                    ? 'text-gray-500 dark:text-gray-400'
-                                    : 'text-white/70'
+                                ? 'text-gray-500 dark:text-gray-400'
+                                : 'text-white/70'
                                 }`}>
                                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
@@ -190,7 +230,7 @@ const AIChat = () => {
             {/* Quick Questions */}
             {messages.length === 1 && (
                 <div className="border-t border-gray-200 p-4 dark:border-gray-700">
-                    <p className="mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400">Quick questions:</p>
+                    <p className="mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('quick_questions')}</p>
                     <div className="flex flex-wrap gap-2">
                         {quickQuestions.map((question, index) => (
                             <button
@@ -213,7 +253,7 @@ const AIChat = () => {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="Ask me anything..."
+                        placeholder={t('ask_anything')}
                         className="flex-1 rounded-xl border-2 border-gray-200 bg-white px-4 py-2 text-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                     />
                     <Button
