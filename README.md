@@ -8,7 +8,8 @@
 
 ### 🚀 الموقع المباشر | Live Demo
 
-**[🌐 زيارة الموقع المباشر: https://roommates.netlify.app/](https://roommates.netlify.app/)**
+**[🌐 زيارة الموقع المباشر: https://roommate
+s.netlify.app/](https://roommats.netlify.app/)**
 
 ---
 
