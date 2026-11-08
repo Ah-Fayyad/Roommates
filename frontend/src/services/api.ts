@@ -36,11 +36,15 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
+                const currentToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
                 // Try to refresh the token
                 const response = await axios.post(
                     `${API_BASE_URL}/auth/refresh`,
                     {},
-                    { withCredentials: true }
+                    { 
+                        withCredentials: true,
+                        headers: { Authorization: `Bearer ${currentToken}` }
+                    }
                 );
 
                 const { token } = response.data;
@@ -55,7 +59,7 @@ api.interceptors.response.use(
                 // Refresh failed - logout user
                 localStorage.removeItem(STORAGE_KEYS.TOKEN);
                 localStorage.removeItem(STORAGE_KEYS.USER);
-                window.location.href = '/login';
+                window.dispatchEvent(new Event('auth_error'));
                 return Promise.reject(refreshError);
             }
         }

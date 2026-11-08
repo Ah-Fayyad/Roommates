@@ -215,6 +215,11 @@
   .stagger-4 {
     animation-delay: 0.4s;
   }
+
+  @keyframes slideDown {
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(6px); opacity: 0.5; }
+  }
 }
 
 /* Scrollbar styling */

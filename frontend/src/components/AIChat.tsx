@@ -63,30 +63,30 @@ const AIChat = () => {
         const lowerMessage = userMessage.toLowerCase();
 
         if (lowerMessage.includes('find') && lowerMessage.includes('roommate')) {
-            return "To find a compatible roommate, I recommend:\n\n1. **Use our Smart Matching**: Our AI analyzes your lifestyle, habits, and preferences\n2. **Be Specific**: Fill out your profile completely with your habits and preferences\n3. **Browse Verified Profiles**: Look for verified student profiles\n4. **Ask Questions**: Use our chat feature to get to know potential roommates\n5. **Meet in Person**: Always meet in a public place before making decisions\n\nWould you like help setting up your profile for better matches?";
+            return t('bot_response_find_roommate');
         }
 
         if (lowerMessage.includes('ask') || lowerMessage.includes('question')) {
-            return "Great question! Here are important questions to ask potential roommates:\n\n**Lifestyle:**\n• What's your sleep schedule?\n• How clean do you keep shared spaces?\n• Do you have pets?\n• Do you smoke or drink?\n\n**Practical:**\n• How do you prefer to split bills?\n• What's your budget for rent and utilities?\n• How long are you planning to stay?\n\n**Social:**\n• Do you like having guests over?\n• Are you more introverted or extroverted?\n• What are your hobbies?\n\nWant me to help you prepare for a roommate interview?";
+            return t('bot_response_questions');
         }
 
         if (lowerMessage.includes('tip') || lowerMessage.includes('advice') || lowerMessage.includes('living')) {
-            return "Here are my top tips for successful roommate living:\n\n✨ **Communication is Key**\n• Have regular house meetings\n• Address issues early and respectfully\n• Use a shared calendar for chores\n\n🏠 **Respect Boundaries**\n• Knock before entering rooms\n• Respect quiet hours\n• Ask before using others' belongings\n\n💰 **Financial Clarity**\n• Split bills fairly and on time\n• Keep receipts for shared expenses\n• Use apps like Splitwise\n\n🧹 **Cleanliness**\n• Create a cleaning schedule\n• Clean as you go\n• Respect shared spaces\n\nNeed specific advice on any of these topics?";
+            return t('bot_response_tips');
         }
 
         if (lowerMessage.includes('bill') || lowerMessage.includes('split') || lowerMessage.includes('money')) {
-            return "Here's how to handle bills fairly:\n\n💳 **Best Practices:**\n1. **Equal Split**: Divide all bills equally if rooms are similar\n2. **Proportional**: Split based on room size or income\n3. **Use Apps**: Try Splitwise, Venmo, or PayPal for tracking\n\n📊 **What to Split:**\n• Rent (usually equal or by room size)\n• Utilities (electricity, water, internet)\n• Shared supplies (cleaning products, toilet paper)\n• Shared subscriptions (Netflix, etc.)\n\n⚠️ **Tips:**\n• Set up automatic payments\n• Keep a shared spreadsheet\n• Discuss and agree on everything upfront\n• Have a buffer fund for emergencies\n\nWant help creating a bill-splitting agreement?";
+            return t('bot_response_bills');
         }
 
         if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-            return "Hello! 👋 I'm here to help you with anything related to finding roommates and living together. You can ask me about:\n\n• Finding compatible roommates\n• Questions to ask potential roommates\n• Tips for living together\n• How to split bills\n• Dealing with conflicts\n• And much more!\n\nWhat would you like to know?";
+            return t('bot_response_hello');
         }
 
         if (lowerMessage.includes('thank')) {
-            return "You're very welcome! 😊 I'm always here to help. Feel free to ask me anything else about roommates, or check out our listings to find your perfect match. Good luck with your search!";
+            return t('bot_response_thanks');
         }
 
-        return "That's an interesting question! While I'm still learning, I can help you with:\n\n• Finding compatible roommates\n• Roommate interview questions\n• Living together tips\n• Bill splitting advice\n• Conflict resolution\n\nCould you rephrase your question or choose one of these topics? I'm here to help! 🏠";
+        return t('bot_response_fallback');
     };
 
     const handleSend = async () => {
@@ -125,7 +125,7 @@ const AIChat = () => {
             // Fallback to error message
             const errorResponse: Message = {
                 id: (Date.now() + 1).toString(),
-                text: "I apologize, but I'm having trouble connecting right now. Please try again later.",
+                text: t("ai_error_message"),
                 sender: 'bot',
                 timestamp: new Date()
             };

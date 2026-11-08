@@ -82,6 +82,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     initAuth();
   }, [i18n]);
 
+  useEffect(() => {
+    const handleAuthError = () => {
+      console.warn("Global auth error detected, logging out...");
+      logout();
+    };
+    window.addEventListener('auth_error', handleAuthError);
+    return () => window.removeEventListener('auth_error', handleAuthError);
+  }, []);
+
   const login = (newToken: string, newUser: User) => {
     localStorage.setItem("token", newToken);
     setToken(newToken);
@@ -109,11 +118,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     preferences?: any,
     companyName?: string,
     licenseNumber?: string,
+    advertiserData?: {
+      companyPhone?: string;
+      companyEmail?: string;
+      companyAddress?: string;
+      companySpecialization?: string;
+      website?: string;
+      experience?: string;
+      specialties?: string;
+      marketingServices?: {
+        photos?: boolean;
+        vtours?: boolean;
+      };
+      marketingDescription?: string;
+    },
+    landlordData?: {
+      propertyName?: string;
+      propertyAddress?: string;
+      propertyType?: string;
+      propertyCapacity?: string;
+    }
   ) => {
     try {
       console.log("🔐 Starting registration...", { email, fullName, role });
 
-      const response = await axiosInstance.post("/auth/signup", {
+      const payload: any = {
         email,
         password,
         fullName,
@@ -124,7 +153,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         companyName: companyName || "",
         licenseNumber: licenseNumber || "",
         preferences: preferences || {},
-      });
+      };
+
+      // Add role-specific data
+      if (role === "ADVERTISER" && advertiserData) {
+        payload.advertiserData = advertiserData;
+      }
+
+      if (role === "LANDLORD" && landlordData) {
+        payload.landlordData = landlordData;
+      }
+
+      const response = await axiosInstance.post("/auth/signup", payload);
 
       console.log("✅ Registration successful", response.data);
       const { token: newToken, user: newUser } = response.data;

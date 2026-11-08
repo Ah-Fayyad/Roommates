@@ -21,7 +21,7 @@ const Footer = () => {
                                 />
                             </div>
                             <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-xl font-bold text-transparent">
-                                Roommates
+                                {t('app_name')}
                             </span>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -121,7 +121,7 @@ const Footer = () => {
                             </li>
                             <li className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
                                 <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
-                                <span>Cairo, Egypt</span>
+                                <span>{t('cairo_egypt')}</span>
                             </li>
                         </ul>
                     </div>
@@ -131,10 +131,10 @@ const Footer = () => {
                 <div className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-700">
                     <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                            © {new Date().getFullYear()} Roommates. {t('rights_reserved')}.
+                            © {new Date().getFullYear()} {t('app_name')}. {t('rights_reserved')}.
                         </p>
                         <p className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
-                            Made with <Heart className="h-4 w-4 fill-red-500 text-red-500" /> for students
+                            {t('made_with_heart')}
                         </p>
                     </div>
                 </div>

@@ -1,7 +1,10 @@
-import React from 'react';
-import { MapPin, DollarSign } from 'lucide-react';
+import React, { useState } from 'react';
+import { Marker, Popup } from 'react-leaflet';
+import { MapPin, Star, ChevronRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { createCustomMarker } from './MapStyles';
+import BaseMap from './BaseMap';
 
 interface Listing {
     id: string;
@@ -11,6 +14,8 @@ interface Listing {
     longitude: number;
     address?: string;
     images: { url: string }[];
+    roomType?: string;
+    rating?: number;
 }
 
 interface AllListingsMapProps {
@@ -18,57 +23,90 @@ interface AllListingsMapProps {
 }
 
 const AllListingsMap: React.FC<AllListingsMapProps> = ({ listings }) => {
-    const { t } = useTranslation();
-    // Mock map view - showing listings in a grid instead
+    const { t, i18n } = useTranslation();
+    const isArabic = i18n.language === 'ar';
+    const [activeListingId, setActiveListingId] = useState<string | null>(null);
+
+    // Filter valid listings
+    const validListings = listings.filter(l => l.latitude && l.longitude);
+    const center: [number, number] = validListings.length > 0 
+        ? [validListings[0].latitude, validListings[0].longitude] 
+        : [30.0444, 31.2357];
+
     return (
-        <div className="w-full overflow-hidden rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 p-6">
-            <div className="flex items-center gap-3 mb-6">
-                <MapPin className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-                <div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                        {t('map_view')}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {t('browse_listings_count', { count: listings.length })}
-                    </p>
-                </div>
-            </div>
+        <BaseMap
+            center={center}
+            zoom={13}
+            height="550px"
+            headerIcon={<Sparkles className="w-6 h-6 animate-pulse" />}
+            headerTitle={t('map_view')}
+            headerSubtitle={t('browse_listings_count', { count: validListings.length })}
+        >
+            {validListings.map(listing => {
+                const isActive = activeListingId === listing.id;
+                const markerColor = isActive ? '#ef4444' : '#4f46e5';
+                const markerIcon = createCustomMarker(markerColor, isActive);
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto">
-                {listings.map(listing => (
-                    <Link
-                        key={listing.id}
-                        to={`/listings/${listing.id}`}
-                        className="bg-white dark:bg-gray-800 rounded-lg p-4 hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
+                return (
+                    <Marker 
+                        key={listing.id} 
+                        position={[listing.latitude, listing.longitude]} 
+                        icon={markerIcon}
+                        eventHandlers={{
+                            click: () => setActiveListingId(listing.id),
+                        }}
                     >
-                        <img
-                            src={listing.images?.[0]?.url || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'}
-                            alt={listing.title}
-                            className="mb-3 h-32 w-full rounded-lg object-cover"
-                        />
-                        <h4 className="font-bold text-gray-900 dark:text-white mb-1 line-clamp-1">
-                            {listing.title}
-                        </h4>
-                        <div className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-semibold mb-2">
-                            {listing.price.toLocaleString('ar-EG')} {t('per_month_short')}
-                        </div>
-                        <div className="flex items-start gap-1 text-xs text-gray-600 dark:text-gray-400">
-                            <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                            <span className="line-clamp-2">
-                                {listing.address || `${listing.latitude.toFixed(4)}, ${listing.longitude.toFixed(4)}`}
-                            </span>
-                        </div>
-                    </Link>
-                ))}
-            </div>
-
-            {listings.length === 0 && (
-                <div className="text-center py-12">
-                    <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 dark:text-gray-400">{t('no_listings_found')}</p>
-                </div>
-            )}
-        </div>
+                        <Popup minWidth={280} className="premium-listing-popup">
+                            <Link to={`/listings/${listing.id}`} className="group block focus:outline-none">
+                                <div className="relative h-36 w-full overflow-hidden rounded-t-2xl">
+                                    <img
+                                        src={listing.images?.[0]?.url || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'}
+                                        alt={listing.title}
+                                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-orange-500 px-3 py-1 text-[10px] font-black tracking-widest text-white shadow-lg rounded-full uppercase">
+                                        {listing.roomType || 'Private'}
+                                    </div>
+                                    <div className="absolute bottom-3 right-3 bg-white/95 dark:bg-gray-900/95 px-3 py-1 text-sm font-black text-indigo-600 rounded-lg shadow-xl backdrop-blur-sm border border-white/50">
+                                        {listing.price.toLocaleString(isArabic ? 'ar-EG' : 'en-US')} <span className="text-[10px] font-medium text-gray-500">/{t('per_month_short')}</span>
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-white dark:bg-gray-900 rounded-b-2xl">
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <h4 className="line-clamp-1 text-base font-bold text-gray-900 dark:text-white transition-colors group-hover:text-indigo-600">
+                                            {listing.title}
+                                        </h4>
+                                        {listing.rating && (
+                                            <div className="flex items-center gap-1 text-amber-500 text-xs font-black bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">
+                                                <Star className="w-3 h-3 fill-current" />
+                                                {listing.rating}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="mb-4 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                        <MapPin className="w-3.5 h-3.5 text-red-500" />
+                                        {listing.address || 'Unknown address'}
+                                    </p>
+                                    <div className="flex items-center justify-between pointer-events-none group-hover:pointer-events-auto">
+                                        <div className="flex -space-x-2">
+                                            {[1,2,3].map(i => (
+                                                <div key={i} className="w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 bg-gray-200 overflow-hidden">
+                                                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="flex items-center text-xs font-black text-indigo-600 group-hover:translate-x-1 transition-all rtl:group-hover:-translate-x-1">
+                                            {t('view_details', 'View Match')}
+                                            <ChevronRight className={`w-4 h-4 ms-1 ${isArabic ? 'rotate-180' : ''}`} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
+                        </Popup>
+                    </Marker>
+                );
+            })}
+        </BaseMap>
     );
 };
 

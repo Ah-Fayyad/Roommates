@@ -22,6 +22,7 @@ import PrivacyPolicy from "../pages/PrivacyPolicy";
 import Dashboard from "../pages/Dashboard";
 import MyListings from "../pages/MyListings";
 import MyVisits from "../pages/MyVisits";
+import MyBookings from "../pages/MyBookings";
 import Unauthorized from "../pages/Unauthorized";
 
 // Admin imports
@@ -94,6 +95,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <MyVisits />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="my-bookings"
+          element={
+            <ProtectedRoute>
+              <MyBookings />
             </ProtectedRoute>
           }
         />

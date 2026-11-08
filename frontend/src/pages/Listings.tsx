@@ -25,6 +25,9 @@ const Listings = () => {
   const [priceRange, setPriceRange] = useState("all");
   const [roomType, setRoomType] = useState("all");
   const [showMap, setShowMap] = useState(false);
+  const searchParams = new URLSearchParams(window.location.search);
+  const initialCategory = searchParams.get('category') || 'STUDENT_HOUSING';
+  const [listingCategory, setListingCategory] = useState(initialCategory);
 
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
@@ -77,7 +80,7 @@ const Listings = () => {
     e.stopPropagation();
 
     if (!token) {
-      alert("Please login to add favorites");
+      alert(t('login_to_favorite'));
       return;
     }
 
@@ -99,7 +102,7 @@ const Listings = () => {
       }
     } catch (error) {
       console.error("Failed to toggle favorite", error);
-      alert("Could not update favorite. Please try again.");
+      alert(t('failed_toggle_favorite'));
     }
   };
 
@@ -125,8 +128,8 @@ const Listings = () => {
   };
 
   useEffect(() => {
-    fetchListings();
-  }, []);
+    fetchListings({ listingCategory });
+  }, [listingCategory]);
 
   const handleAiSearch = async () => {
     if (!searchTerm.trim()) return;
@@ -230,6 +233,30 @@ const Listings = () => {
               <p className="text-lg text-gray-600 dark:text-gray-400">
                 {t('browse_listings_count', { count: filteredListings.length })}
               </p>
+            </div>
+
+            {/* Category Toggle Tabs */}
+            <div className="mb-6 flex space-x-4 border-b border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setListingCategory('STUDENT_HOUSING')}
+                className={`pb-3 text-lg font-semibold transition-colors ${
+                  listingCategory === 'STUDENT_HOUSING'
+                    ? 'border-b-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                {t('student_housing', 'Student Housing')}
+              </button>
+              <button
+                onClick={() => setListingCategory('VACATION_RENTAL')}
+                className={`pb-3 text-lg font-semibold transition-colors ${
+                  listingCategory === 'VACATION_RENTAL'
+                    ? 'border-b-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                {t('vacation_rentals', 'Vacation Rentals')}
+              </button>
             </div>
 
             {/* Search and Filters */}
@@ -424,106 +451,115 @@ const Listings = () => {
                   <Link
                     key={listing.id}
                     to={`/listings/${listing.id}`}
-                    className="card-hover glass group animate-fadeInUp overflow-hidden rounded-2xl"
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className="group block"
+                    style={{ animationDelay: `${index * 0.05}s` }}
                   >
-                    {/* Image */}
-                    <div className="relative h-48 overflow-hidden">
-                      <img
-                        src={
-                          listing.images?.[0]?.url ||
-                          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800"
-                        }
-                        alt={listing.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800";
-                        }}
-                      />
-                      {listing.owner?.isVerified && (
-                        <div className="absolute end-3 top-3 rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white shadow-lg">
-                          ✓ {t('verified')}
-                        </div>
-                      )}
-                      <button
-                        onClick={(e) => toggleFavorite(e, listing.id)}
-                        className={`absolute start-3 top-3 rounded-full p-2 transition-all shadow-sm ${favorites.includes(listing.id)
-                          ? "bg-red-500 text-white hover:bg-red-600"
-                          : "bg-white/90 text-gray-700 hover:bg-white hover:text-red-500 dark:bg-gray-800/90 dark:text-gray-300"
-                          }`}
-                      >
-                        <Heart
-                          className={`h-5 w-5 ${favorites.includes(listing.id) ? "fill-current" : ""}`}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-5">
-                      <div className="mb-2 flex items-start justify-between">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                          {listing.title}
-                        </h3>
-                        <div className="flex items-center gap-1 text-sm font-semibold text-amber-500">
-                          <Star className="h-4 w-4 fill-current" />
-                          {listing.rating || t('new_listing')}
-                        </div>
-                      </div>
-
-                      <div className="mb-3 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <MapPin className="h-4 w-4" />
-                        {listing.address}
-                      </div>
-
-                      <div className="mb-4 flex flex-wrap gap-2">
-                        {(() => {
-                          let amenitiesList: string[] = [];
-                          try {
-                            if (typeof listing.amenities === "string") {
-                              amenitiesList = JSON.parse(listing.amenities);
-                            } else if (Array.isArray(listing.amenities)) {
-                              amenitiesList = listing.amenities;
-                            }
-                          } catch (e) {
-                            // Fallback if parsing fails or simple string
-                            amenitiesList =
-                              typeof listing.amenities === "string"
-                                ? [listing.amenities]
-                                : [];
+                    <div className="bg-white dark:bg-gray-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 dark:border-gray-800">
+                      {/* Image */}
+                      <div className="relative overflow-hidden aspect-[4/3]">
+                        <img
+                          src={
+                            listing.images?.[0]?.url ||
+                            "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800"
                           }
+                          alt={listing.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800";
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        {/* Top badges */}
+                        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                          {listing.listingCategory === 'VACATION_RENTAL' && (
+                            <span className="bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow">
+                              🏖️ {i18n.language === 'ar' ? 'سياحي' : 'Vacation'}
+                            </span>
+                          )}
+                          {listing.viewsCount > 100 && (
+                            <span className="bg-amber-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow">
+                              🔥 {i18n.language === 'ar' ? 'رائج' : 'Popular'}
+                            </span>
+                          )}
+                          {listing.owner?.isVerified && (
+                            <span className="bg-emerald-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow">
+                              ✓ {t('verified')}
+                            </span>
+                          )}
+                        </div>
+                        {/* Favorite button */}
+                        <button
+                          onClick={(e) => toggleFavorite(e, listing.id)}
+                          className={`absolute top-3 right-3 rounded-full p-2.5 transition-all shadow-lg ${
+                            favorites.includes(listing.id)
+                              ? "bg-red-500 text-white hover:bg-red-600"
+                              : "bg-white/90 text-gray-700 hover:bg-white hover:text-red-500 dark:bg-gray-800/90 dark:text-gray-300"
+                          }`}
+                        >
+                          <Heart className={`h-4 w-4 ${favorites.includes(listing.id) ? "fill-current" : ""}`} />
+                        </button>
+                      </div>
 
-                          return amenitiesList
-                            .slice(0, 3)
-                            .map((feature: string, idx: number) => (
-                              <span
-                                key={idx}
-                                className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400"
-                              >
+                      {/* Content */}
+                      <div className="p-5">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="font-black text-gray-900 dark:text-white text-base leading-snug line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            {listing.title}
+                          </h3>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-3">
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-pink-500" />
+                          <span className="truncate">{listing.address}</span>
+                        </div>
+
+                        {/* Amenities pills */}
+                        <div className="flex flex-wrap gap-1.5 mb-4">
+                          {(() => {
+                            let amenitiesList: string[] = [];
+                            try {
+                              if (typeof listing.amenities === "string") {
+                                amenitiesList = JSON.parse(listing.amenities);
+                              } else if (Array.isArray(listing.amenities)) {
+                                amenitiesList = listing.amenities;
+                              }
+                            } catch (e) { amenitiesList = []; }
+                            return amenitiesList.slice(0, 3).map((feature: string, idx: number) => (
+                              <span key={idx} className="rounded-full bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                                 {t(feature) || feature}
                               </span>
                             ));
-                        })()}
-                      </div>
-
-                      <div className="flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700">
-                        <div className="flex items-center gap-2 text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                          <span className="text-xs font-normal text-gray-500">
-                            {t('egp')}
-                          </span>
-                          {listing.price.toLocaleString(i18n.language === 'ar' ? 'ar-EG' : 'en-US')}
-                          <span className="text-xs font-normal text-gray-500">
-                            {t('per_month_short')}
-                          </span>
+                          })()}
                         </div>
-                        <div className="rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
-                          {listing.roomType || "Private"}
+
+                        {/* Price row */}
+                        <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+                          <div>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                                {(listing.listingCategory === 'VACATION_RENTAL'
+                                  ? (listing.dailyPrice || listing.price)
+                                  : listing.price
+                                ).toLocaleString(i18n.language === 'ar' ? 'ar-EG' : 'en-US')}
+                              </span>
+                              <span className="text-xs font-bold text-gray-500">
+                                EGP/{listing.listingCategory === 'VACATION_RENTAL'
+                                  ? (i18n.language === 'ar' ? 'ليلة' : 'night')
+                                  : t('per_month_short')}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm">
+                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                            <span className="font-bold text-gray-900 dark:text-white">4.9</span>
+                            <span className="text-gray-400 text-xs">(24)</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </Link>
                 ))}
-              </div>
-            )}
+            )}\n
 
             {/* No Results */}
             {filteredListings.length === 0 && (
@@ -577,7 +613,7 @@ const Listings = () => {
                         className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
                       />
                       <span className="text-gray-700 dark:text-gray-300">
-                        {amenity}
+                        {t(amenity)}
                       </span>
                     </label>
                   ))}
@@ -586,7 +622,7 @@ const Listings = () => {
 
               <div>
                 <h4 className="mb-3 font-semibold text-gray-900 dark:text-white">
-                  Type
+                  {t('type')}
                 </h4>
                 <div className="flex gap-2">
                   {["all", "private", "shared", "studio"].map((type) => (
@@ -598,7 +634,7 @@ const Listings = () => {
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300"
                         }`}
                     >
-                      {type}
+                      {t(type)}
                     </button>
                   ))}
                 </div>

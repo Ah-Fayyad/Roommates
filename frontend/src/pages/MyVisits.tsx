@@ -101,7 +101,7 @@ const MyVisits = () => {
       alert(t("report_submitted_success") || "تم الإبلاغ بنجاح");
     } catch (error) {
       console.error("Failed to submit report", error);
-      alert(t("report_submitted_error") || "فشل الإبلاغ");
+      alert(t("report_submitted_error"));
     }
   };
 
@@ -182,7 +182,7 @@ const MyVisits = () => {
             <div className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 dark:bg-gray-800 rounded-xl dark:border-gray-700">
               <Filter className="w-4 h-4 text-gray-500" />
               <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                {t("filter") || "Filter"}
+                {t("filter")}
               </span>
             </div>
             {["all", "REQUESTED", "ACCEPTED", "DECLINED"].map((status) => (
@@ -222,7 +222,7 @@ const MyVisits = () => {
                 </p>
                 <a href="/listings">
                   <Button variant="gradient" size="sm">
-                    {t("browse_listings") || "استكشف الإعلانات"}
+                    {t("browse_listings")}
                   </Button>
                 </a>
               </div>
@@ -313,8 +313,8 @@ const MyVisits = () => {
                                 <Eye className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                 <span className="font-medium text-gray-700 dark:text-gray-300">
                                   {expandedContact === visit.id
-                                    ? t("hide_contact") || "إخفاء التفاصيل"
-                                    : t("show_contact") || "عرض التفاصيل"}
+                                    ? t("hide_contact")
+                                    : t("show_contact")}
                                 </span>
                               </button>
 
@@ -331,7 +331,7 @@ const MyVisits = () => {
                               >
                                 <Flag className="w-4 h-4 text-red-600 dark:text-red-400" />
                                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                                  {t("report_listing") || "الإبلاغ"}
+                                  {t("report_listing")}
                                 </span>
                               </button>
 
@@ -347,7 +347,7 @@ const MyVisits = () => {
                               >
                                 <Share2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                                  {t("share") || "مشاركة"}
+                                  {t("share")}
                                 </span>
                               </button>
 
@@ -374,7 +374,7 @@ const MyVisits = () => {
                               >
                                 <Download className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                                  {t("download") || "تحميل"}
+                                  {t("download")}
                                 </span>
                               </button>
                             </div>
@@ -418,7 +418,7 @@ const MyVisits = () => {
                         <div className="p-4 mb-4 border border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 dark:border-indigo-800/50 rounded-xl">
                           <h4 className="flex items-center gap-2 mb-3 font-bold text-gray-900 dark:text-white">
                             <User className="w-4 h-4 text-indigo-600" />
-                            {t("contact_information") || "معلومات الاتصال"}
+                            {t("contact_information")}
                           </h4>
                           <div className="space-y-2 text-sm">
                             {activeTab === "sent" ? (
@@ -501,8 +501,7 @@ const MyVisits = () => {
                                 }
                                 className="px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-bold hover:shadow-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center gap-2"
                               >
-                                <CheckCircle className="w-4 h-4" />
-                                {t("accept_visit") || "قبول"}
+                                {t("accept_visit")}
                               </button>
 
                               <button
@@ -511,8 +510,7 @@ const MyVisits = () => {
                                 }
                                 className="px-6 py-2.5 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg font-bold hover:shadow-lg hover:from-red-600 hover:to-pink-700 transition-all duration-200 flex items-center gap-2"
                               >
-                                <XCircle className="w-4 h-4" />
-                                {t("reject_visit") || "رفض"}
+                                {t("reject_visit")}
                               </button>
                             </>
                           )}
@@ -526,8 +524,7 @@ const MyVisits = () => {
                             size="sm"
                             className="w-full"
                           >
-                            <Eye className="w-4 h-4 mr-2" />
-                            {t("view_listing") || "عرض الإعلان"}
+                            {t("view_listing")}
                             <ChevronRight className="w-4 h-4 ml-1" />
                           </Button>
                         </a>
@@ -545,11 +542,10 @@ const MyVisits = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-sm">
             <div className="w-full max-w-md p-8 transition-all transform bg-white border border-gray-200 shadow-2xl dark:bg-gray-900 rounded-3xl dark:border-gray-800">
               <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                {t("report_listing") || "الإبلاغ عن الإعلان"}
+                {t("report_listing")}
               </h3>
               <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
-                {t("report_description") ||
-                  "يرجى شرح سبب إبلاغك عن هذا الإعلان"}
+                {t("report_description")}
               </p>
 
               <textarea
@@ -557,7 +553,7 @@ const MyVisits = () => {
                 onChange={(e) =>
                   setReportModal({ ...reportModal, reason: e.target.value })
                 }
-                placeholder={t("report_reason_placeholder") || "أدخل السبب..."}
+                placeholder={t("report_reason_placeholder")}
                 className="w-full h-32 px-4 py-3 mb-6 border border-gray-300 resize-none dark:border-gray-700 rounded-xl dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
               />
 
@@ -568,13 +564,13 @@ const MyVisits = () => {
                   }
                   className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
-                  {t("cancel") || "إلغاء"}
+                  {t("cancel")}
                 </button>
                 <button
                   onClick={handleReportSubmit}
                   className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors"
                 >
-                  {t("submit_report") || "إرسال"}
+                  {t("submit_report")}
                 </button>
               </div>
             </div>

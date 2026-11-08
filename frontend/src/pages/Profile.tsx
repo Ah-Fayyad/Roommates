@@ -31,20 +31,20 @@ const Profile = () => {
   const [profile, setProfile] = useState({
     fullName: user?.fullName || "",
     email: user?.email || "",
-    phone: user?.phone || "+20 123 456 7890",
-    location: user?.location || "Cairo, Egypt",
+    phone: user?.phone || "",
+    location: user?.location || t("cairo_egypt"),
     university: user?.university || "",
-    major: user?.major || "Computer Science",
-    year: user?.year || "Junior",
+    major: user?.major || "",
+    year: user?.year || "",
     bio: user?.bio || "",
     avatar: user?.avatar || "https://images.unsplash.com/photo-1535711861845-e1fc4c208451?q=80&w=400",
     preferences: {
-      cleanliness: user?.preferences?.cleanliness || 9,
-      quietHours: user?.preferences?.quietHours || 8,
-      socializing: user?.preferences?.socializing || 6,
-      cooking: user?.preferences?.cooking || 7,
+      cleanliness: user?.preferences?.cleanliness || 5,
+      quietHours: user?.preferences?.quietHours || 5,
+      socializing: user?.preferences?.socializing || 5,
+      cooking: user?.preferences?.cooking || 5,
     },
-    interests: user?.interests || ["Reading", "Cooking", "Hiking", "Gaming"],
+    interests: user?.interests || [],
   });
 
   // Sync with auth user when it updates
@@ -254,7 +254,7 @@ const Profile = () => {
                 />
               ) : (
                 <p className="text-gray-700 dark:text-gray-300">
-                  {profile.bio || t("no_bio_yet", "No bio added yet.")}
+                  {profile.bio || t("no_bio_yet")}
                 </p>
               )}
             </div>

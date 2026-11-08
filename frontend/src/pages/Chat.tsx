@@ -28,16 +28,20 @@ import { useAuth } from "../context/AuthContext";
 import { socketService } from "../services/socket.service";
 import { useTranslation } from "react-i18next";
 import ReportModal from "../components/ReportModal";
+import VoiceRecorder from "../components/chat/VoiceRecorder";
 
 interface Message {
   id: string;
   senderId: string;
   content: string;
-  type: "TEXT" | "IMAGE";
+  type: "TEXT" | "IMAGE" | "AUDIO";
   imageUrl?: string;
+  audioUrl?: string;
+  reactions?: Record<string, string[]>; // emoji -> userIds[]
   createdAt: Date;
   read: boolean;
   delivered: boolean;
+  edited?: boolean;
 }
 
 interface ChatUser {
@@ -63,15 +67,17 @@ const Chat = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [chats, setChats] = useState<ChatUser[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState<Record<string, boolean>>({}); // chatId -> isTyping
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -122,8 +128,43 @@ const Chat = () => {
         }
       });
 
-      socketService.on("user_online", () => fetchChats());
-      socketService.on("user_offline", () => fetchChats());
+      socketService.on("user_typing", ({ chatId, userId: typingUserId, isTyping: typingStatus }: any) => {
+        if (chatId === selectedChat) {
+          setIsTyping((prev) => ({ ...prev, [chatId]: typingStatus }));
+        }
+      });
+
+      socketService.on("message_reaction", ({ messageId, emoji, userId: reactorId, reactions }: any) => {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId ? { ...m, reactions } : m))
+        );
+      });
+
+      socketService.on("message_edited", ({ messageId, content }: any) => {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId ? { ...m, content, edited: true } : m))
+        );
+      });
+      
+      socketService.on("message_deleted", ({ messageId }: any) => {
+        setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      });
+
+      socketService.on("user_online", ({ userId: onlineUserId }: any) => {
+        setChats((prev) =>
+          prev.map((c) =>
+            c.participantId === onlineUserId ? { ...c, online: true } : c
+          )
+        );
+      });
+
+      socketService.on("user_offline", ({ userId: offlineUserId }: any) => {
+        setChats((prev) =>
+          prev.map((c) =>
+            c.participantId === offlineUserId ? { ...c, online: false } : c
+          )
+        );
+      });
     }
 
     return () => {
@@ -176,10 +217,20 @@ const Chat = () => {
             },
           );
           setMessages(
-            response.data.map((m: any) => ({
-              ...m,
-              createdAt: new Date(m.createdAt),
-            })),
+            response.data.map((m: any) => {
+              let reactions = {};
+              try {
+                reactions = m.reactions ? (typeof m.reactions === 'string' ? JSON.parse(m.reactions) : m.reactions) : {};
+              } catch (e) {
+                console.error("Failed to parse reactions", e);
+              }
+
+              return {
+                ...m,
+                reactions,
+                createdAt: new Date(m.createdAt),
+              };
+            }),
           );
           // Mark all as read
           const unreadIds = response.data
@@ -270,6 +321,110 @@ const Chat = () => {
     }
   };
 
+  const handleVoiceSend = async (audioFile: File) => {
+    if (!selectedChat) return;
+
+    const activeChatUser = chats.find((c) => c.id === selectedChat);
+    if (!activeChatUser) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", audioFile); // Use 'image' field for now as backend expects it
+      const uploadRes = await axios.post(`${API_BASE_URL}/chats/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const audioUrl = uploadRes.data.url;
+      const tempId = Date.now().toString();
+
+      const payload = {
+        chatId: selectedChat,
+        toUserId: activeChatUser.participantId,
+        content: t("voice_note"),
+        type: "AUDIO",
+        audioUrl,
+        tempId,
+      };
+
+      socketService.emit("send_message", payload);
+
+      const newMessage: Message = {
+        id: tempId,
+        senderId: user?.id || "me",
+        content: t("voice_note"),
+        type: "AUDIO",
+        audioUrl,
+        createdAt: new Date(),
+        read: false,
+        delivered: false,
+      };
+
+      setMessages((prev) => [...prev, newMessage]);
+    } catch (error) {
+      console.error("Failed to send voice note", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleReaction = (messageId: string, emoji: string) => {
+    if (!selectedChat || !user) return;
+    
+    socketService.emit("message_reaction", {
+      chatId: selectedChat,
+      messageId,
+      emoji,
+    });
+
+    // Optimistic update
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.id === messageId) {
+          const reactions = { ...(m.reactions || {}) };
+          const userIds = [...(reactions[emoji] || [])];
+          const hasReacted = userIds.includes(user.id);
+
+          if (hasReacted) {
+            reactions[emoji] = userIds.filter((id) => id !== user.id);
+          } else {
+            reactions[emoji] = [...userIds, user.id];
+          }
+          return { ...m, reactions };
+        }
+        return m;
+      })
+    );
+  };
+
+  const handleEdit = () => {
+    if (!editingMessage || !message.trim()) return;
+    
+    socketService.emit("edit_message", {
+      messageId: editingMessage.id,
+      content: message,
+    });
+
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === editingMessage.id ? { ...m, content: message, edited: true } : m
+      )
+    );
+    
+    setEditingMessage(null);
+    setMessage("");
+  };
+
+  const handleDelete = (messageId: string) => {
+    if (!window.confirm(t("confirm_delete_message"))) return;
+    
+    socketService.emit("delete_message", { messageId });
+    setMessages((prev) => prev.filter((m) => m.id !== messageId));
+  };
+
   const activeChat = chats.find((c) => c.id === selectedChat);
   const filteredChats = chats.filter((chat) =>
     chat.name?.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -333,7 +488,13 @@ const Chat = () => {
                     )}
                   </div>
                   <p className="text-sm text-gray-600 truncate dark:text-gray-400">
-                    {chat.lastMessage}
+                    {isTyping[chat.id] ? (
+                      <span className="text-indigo-600 dark:text-indigo-400 font-medium animate-pulse">
+                        {t('typing_indicator')}...
+                      </span>
+                    ) : (
+                      chat.lastMessage
+                    )}
                   </p>
                 </div>
               </div>
@@ -369,7 +530,11 @@ const Chat = () => {
                   {activeChat.name}
                 </h3>
                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                  {activeChat.online ? (
+                  {isTyping[selectedChat] ? (
+                    <span className="text-indigo-600 dark:text-indigo-400 font-medium animate-pulse">
+                      {t('typing_indicator')}...
+                    </span>
+                  ) : activeChat.online ? (
                     <span className="flex items-center gap-1.5">
                       <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                       {t('online_now')}
@@ -425,13 +590,45 @@ const Chat = () => {
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex animate-fadeInUp ${msg.senderId === user?.id ? "justify-end" : "justify-start"
+                  className={`flex group relative mb-4 animate-fadeInUp ${msg.senderId === user?.id ? "justify-end" : "justify-start"
                     }`}
                 >
+                  {/* Reaction Menu on hover */}
+                  <div className={`absolute -top-8 transition-opacity opacity-0 group-hover:opacity-100 flex gap-1 bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 rounded-full px-2 py-1 z-10 ${msg.senderId === user?.id ? "right-0" : "left-0"}`}>
+                    {['❤️', '👍', '😂', '😮', '😢', '🔥'].map(emoji => (
+                      <button
+                        key={emoji}
+                        onClick={() => handleReaction(msg.id, emoji)}
+                        className="hover:scale-125 transition-transform p-1 grayscale hover:grayscale-0"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                    {msg.senderId === user?.id && msg.type === "TEXT" && (
+                      <div className="flex border-l border-gray-200 dark:border-gray-700 ml-1 pl-1">
+                        <button
+                          onClick={() => {
+                            setEditingMessage(msg);
+                            setMessage(msg.content);
+                          }}
+                          className="p-1 hover:text-indigo-600 transition-colors"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(msg.id)}
+                          className="p-1 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   <div
-                    className={`max-w-[75%] rounded-2xl px-4 py-3 shadow-sm ${msg.senderId === user?.id
-                      ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
-                      : "bg-white text-gray-900 dark:bg-gray-800 dark:text-white border border-gray-100 dark:border-gray-700"
+                    className={`max-w-[75%] rounded-3xl px-4 py-2.5 shadow-md relative ${msg.senderId === user?.id
+                      ? "bg-gradient-to-br from-indigo-600 via-indigo-600 to-purple-600 text-white rounded-tr-none shadow-indigo-500/10"
+                      : "bg-white text-gray-900 dark:bg-gray-800 dark:text-white border border-gray-100 dark:border-gray-700 rounded-tl-none shadow-gray-200/20"
                       }`}
                   >
                     {msg.type === "IMAGE" && msg.imageUrl && (
@@ -442,6 +639,12 @@ const Chat = () => {
                           className="max-h-60 w-auto rounded-lg object-cover cursor-pointer"
                           onClick={() => window.open(msg.imageUrl)}
                         />
+                      </div>
+                    )}
+
+                    {msg.type === "AUDIO" && msg.audioUrl && (
+                      <div className={`mb-2 min-w-[200px] ${msg.senderId === user?.id ? "text-white" : "text-indigo-600"}`}>
+                        <audio src={msg.audioUrl} controls className="w-full max-h-8" />
                       </div>
                     )}
 
@@ -473,6 +676,7 @@ const Chat = () => {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
+                        {msg.edited && <span className="ml-1 opacity-70">({t('edited')})</span>}
                       </span>
                       {msg.senderId === user?.id && (
                         <div className="flex">
@@ -486,6 +690,20 @@ const Chat = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Reactions display */}
+                    {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                      <div className={`absolute -bottom-4 flex gap-1 ${msg.senderId === user?.id ? "right-2 flex-row-reverse" : "left-2"}`}>
+                        {Object.entries(msg.reactions).map(([emoji, userIds]) => (
+                          userIds.length > 0 && (
+                            <div key={emoji} className="bg-white dark:bg-gray-700 shadow-sm border border-gray-100 dark:border-gray-600 rounded-full px-1.5 py-0.5 text-[11px] flex items-center gap-1">
+                              <span>{emoji}</span>
+                              {userIds.length > 1 && <span>{userIds.length}</span>}
+                            </div>
+                          )
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -514,6 +732,33 @@ const Chat = () => {
               </div>
             )}
 
+            {editingMessage && (
+              <div className="mb-4 flex items-center justify-between bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded-xl border border-indigo-100 dark:border-indigo-900/30 animate-fadeInUp">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg">
+                    <Edit2 className="w-4 h-4 text-indigo-600" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-indigo-600/60">
+                      {t('editing_message')}
+                    </span>
+                    <span className="text-sm font-medium text-indigo-900 dark:text-indigo-100 truncate max-w-[300px]">
+                      {editingMessage.content}
+                    </span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => {
+                    setEditingMessage(null);
+                    setMessage("");
+                  }}
+                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center gap-3">
               <input
                 type="file"
@@ -535,12 +780,31 @@ const Chat = () => {
                 <EmojiPicker
                   onEmojiSelect={(emoji) => setMessage((prev) => prev + emoji)}
                 />
+                <VoiceRecorder onSend={handleVoiceSend} isUploading={isUploading} />
               </div>
 
               <input
                 type="text"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                  const activeChatUser = chats.find((c) => c.id === selectedChat);
+                  if (activeChatUser) {
+                    socketService.emit("typing_start", {
+                      chatId: selectedChat,
+                      toUserId: activeChatUser.participantId,
+                    });
+
+                    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                    
+                    typingTimeoutRef.current = setTimeout(() => {
+                      socketService.emit("typing_stop", {
+                        chatId: selectedChat,
+                        toUserId: activeChatUser.participantId,
+                      });
+                    }, 3000);
+                  }
+                }}
                 onKeyPress={(e) => e.key === "Enter" && handleSend()}
                 placeholder={
                   isUploading ? t('uploading_image_chat') : t('type_message_chat')
@@ -550,7 +814,7 @@ const Chat = () => {
               />
 
               <Button
-                onClick={handleSend}
+                onClick={editingMessage ? handleEdit : handleSend}
                 disabled={(!message.trim() && !selectedImage) || isUploading}
                 variant="gradient"
                 className="rounded-2xl px-6 h-12 flex items-center justify-center shadow-lg shadow-indigo-500/20"

@@ -61,6 +61,13 @@ const ListingDetails = () => {
   const [requestStatus, setRequestStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingStartDate, setBookingStartDate] = useState("");
+  const [bookingEndDate, setBookingEndDate] = useState("");
+  const [bookingGuests, setBookingGuests] = useState(1);
+  const [bookingStatus, setBookingStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [priceAdvice, setPriceAdvice] = useState<any>(null);
   const [imageDescription, setImageDescription] = useState<string>("");
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
@@ -183,6 +190,39 @@ const ListingDetails = () => {
     } catch (error) {
       console.error("Failed to request visit", error);
       setRequestStatus("error");
+    }
+  };
+
+  const handleBookNow = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    setBookingStatus("loading");
+    try {
+      await axios.post(
+        `${API_BASE_URL}/bookings`,
+        {
+          listingId: id,
+          startDate: bookingStartDate,
+          endDate: bookingEndDate,
+          guestsCount: bookingGuests,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      setBookingStatus("success");
+      setTimeout(() => {
+        setShowBookingModal(false);
+        setBookingStatus("idle");
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to request booking", error);
+      setBookingStatus("error");
     }
   };
 
@@ -427,10 +467,10 @@ const ListingDetails = () => {
                     <span className="text-base font-normal text-gray-500">
                       {t('egp')}
                     </span>
-                    {listing.price.toLocaleString(isArabic ? 'ar-EG' : 'en-US')}
+                    {(listing.listingCategory === 'VACATION_RENTAL' ? (listing.dailyPrice || listing.price) : listing.price).toLocaleString(isArabic ? 'ar-EG' : 'en-US')}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('per_month')}
+                    {listing.listingCategory === 'VACATION_RENTAL' ? t('per_night', 'per night') : t('per_month')}
                   </div>
                 </div>
               </div>
@@ -597,14 +637,25 @@ const ListingDetails = () => {
                         <span className="font-bold">{t('message_internally')}</span>
                       </Button>
 
-                      <Button
-                        variant="outline"
-                        className="w-full py-7 rounded-2xl border-2 border-indigo-100 dark:border-indigo-900/30 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all flex items-center justify-center gap-2 group"
-                        onClick={() => setShowVisitModal(true)}
-                      >
-                        <Calendar className="w-5 h-5 text-indigo-500 group-hover:rotate-12 transition-transform" />
-                        <span className="font-bold text-gray-700 dark:text-gray-200">{t('request_visit')}</span>
-                      </Button>
+                      {listing.listingCategory === 'VACATION_RENTAL' ? (
+                        <Button
+                          variant="outline"
+                          className="w-full py-7 rounded-2xl border-2 border-pink-100 dark:border-pink-900/30 hover:bg-pink-50 dark:hover:bg-pink-900/10 transition-all flex items-center justify-center gap-2 group"
+                          onClick={() => setShowBookingModal(true)}
+                        >
+                          <Calendar className="w-5 h-5 text-pink-500 group-hover:rotate-12 transition-transform" />
+                          <span className="font-bold text-gray-700 dark:text-gray-200">{t('book_now', 'Book Now')}</span>
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="w-full py-7 rounded-2xl border-2 border-indigo-100 dark:border-indigo-900/30 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all flex items-center justify-center gap-2 group"
+                          onClick={() => setShowVisitModal(true)}
+                        >
+                          <Calendar className="w-5 h-5 text-indigo-500 group-hover:rotate-12 transition-transform" />
+                          <span className="font-bold text-gray-700 dark:text-gray-200">{t('request_visit')}</span>
+                        </Button>
+                      )}
                     </div>
 
                     {/* Contact Information Section - Professional Redesign */}
@@ -830,6 +881,134 @@ const ListingDetails = () => {
                   disabled={requestStatus === "loading"}
                 >
                   {requestStatus === "loading" ? t('sending') : t('send_request')}
+                </Button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Booking Modal */}
+      {showBookingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md p-6 glass rounded-2xl animate-fadeInUp">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                {t('book_now', 'Book Now')}
+              </h3>
+              <button
+                onClick={() => setShowBookingModal(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {bookingStatus === "success" ? (
+              <div className="py-8 text-center">
+                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-green-600 bg-green-100 rounded-full">
+                  <Check className="w-8 h-8" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {t('booking_request_sent', 'Booking Request Sent!')}
+                </h4>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {t('owner_notified_booking', 'The owner has been notified and will review your request.')}
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleBookNow} className="space-y-4">
+                {bookingStatus === "error" && (
+                  <div className="p-3 text-sm text-red-600 bg-red-50 rounded-xl border border-red-100 dark:bg-red-900/20 dark:text-red-400">
+                    {t('failed_send_request')}
+                  </div>
+                )}
+                
+                <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl mb-4 border border-gray-100 dark:border-gray-700">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-600 dark:text-gray-400 font-semibold">{t('price', 'Price')}</span>
+                    <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">
+                      {(listing.dailyPrice || listing.price).toLocaleString(isArabic ? 'ar-EG' : 'en-US')} <span className="text-sm font-bold text-gray-500">EGP/{isArabic ? 'ليلة' : 'night'}</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-1 text-sm font-bold text-gray-700 dark:text-gray-300">
+                      {t('check_in', 'Check-in')}
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={bookingStartDate}
+                      onChange={(e) => setBookingStartDate(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl dark:border-gray-700 dark:bg-gray-800 dark:text-white font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-sm font-bold text-gray-700 dark:text-gray-300">
+                      {t('check_out', 'Check-out')}
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={bookingEndDate}
+                      onChange={(e) => setBookingEndDate(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl dark:border-gray-700 dark:bg-gray-800 dark:text-white font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block mb-1 text-sm font-bold text-gray-700 dark:text-gray-300">
+                    {t('guests_count', 'Guests')}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={listing.maxGuests || 1}
+                    required
+                    value={bookingGuests}
+                    onChange={(e) => setBookingGuests(parseInt(e.target.value))}
+                    className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl dark:border-gray-700 dark:bg-gray-800 dark:text-white font-medium"
+                  />
+                </div>
+
+                {/* Price Calculation Display */}
+                {bookingStartDate && bookingEndDate && (
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
+                    {(() => {
+                      const days = Math.ceil((new Date(bookingEndDate).getTime() - new Date(bookingStartDate).getTime()) / (1000 * 3600 * 24));
+                      if (days > 0) {
+                        const total = days * (listing.dailyPrice || listing.price);
+                        return (
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                              <span>{(listing.dailyPrice || listing.price).toLocaleString()} EGP x {days} {isArabic ? 'ليالي' : 'nights'}</span>
+                              <span>{total.toLocaleString()} EGP</span>
+                            </div>
+                            <div className="flex justify-between font-black text-lg pt-2 border-t border-gray-100 dark:border-gray-800">
+                              <span className="text-gray-900 dark:text-white">{t('total_price', 'Total')}</span>
+                              <span className="text-indigo-600 dark:text-indigo-400">{total.toLocaleString(isArabic ? 'ar-EG' : 'en-US')} EGP</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="text-red-500 text-sm font-semibold">{isArabic ? 'تاريخ المغادرة يجب أن يكون بعد تاريخ الوصول' : 'Check-out date must be after check-in'}</div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  variant="gradient"
+                  className="w-full py-4 text-lg mt-4"
+                  disabled={bookingStatus === "loading" || (bookingStartDate && bookingEndDate && Math.ceil((new Date(bookingEndDate).getTime() - new Date(bookingStartDate).getTime()) / (1000 * 3600 * 24)) <= 0)}
+                >
+                  {bookingStatus === "loading" ? t('sending') : t('book_now', 'Book Now')}
                 </Button>
               </form>
             )}

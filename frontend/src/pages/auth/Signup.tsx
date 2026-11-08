@@ -29,6 +29,7 @@ import {
   TrendingUp,
   MapPin,
   Clock,
+  Users,
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "../../config/constants";
@@ -65,6 +66,35 @@ const Signup = () => {
     cleanliness: 5, studyHabits: 5, quietHours: 5,
     socializing: 5, cooking: 5, pets: false, smoking: false,
     guests: true, sleepSchedule: "FLEXIBLE", workSchedule: "STUDENT", budget: 5000,
+    preferredArea: "", preferredGender: "ANY", studyTime: "EVENING"
+  });
+
+  const [companyPhone, setCompanyPhone] = useState("");
+  const [companyEmail, setCompanyEmail] = useState("");
+  const [companyAddress, setCompanyAddress] = useState("");
+  const [companySpecialization, setCompanySpecialization] = useState("RENTAL");
+  const [website, setWebsite] = useState("");
+  const [experience, setExperience] = useState("");
+  const [specialties, setSpecialties] = useState("");
+
+  const [marketingServices, setMarketingServices] = useState({
+    photos: false,
+    vtours: false,
+  });
+
+  const [marketingDescription, setMarketingDescription] = useState("");
+
+  const [propertyName, setPropertyName] = useState("");
+  const [propertyAddress, setPropertyAddress] = useState("");
+  const [propertyType, setPropertyType] = useState("APARTMENT");
+  const [propertyCapacity, setPropertyCapacity] = useState("1");
+
+  const [tenantType, setTenantType] = useState("ANY");
+
+  const [tenantPreferences, setTenantPreferences] = useState({
+      studentsOnly: false,
+      familiesOnly: false,
+      quietHours: "FLEXIBLE"
   });
 
   const [idFront, setIdFront] = useState<File | null>(null);
@@ -116,7 +146,24 @@ const Signup = () => {
         bio,
         preferences,
         companyName,
-        licenseNumber
+        licenseNumber,
+        role === "ADVERTISER" ? {
+          companyPhone,
+          companyEmail,
+          companyAddress,
+          companySpecialization,
+          website,
+          experience,
+          specialties,
+          marketingServices,
+          marketingDescription
+        } : undefined,
+        role === "LANDLORD" ? {
+          propertyName,
+          propertyAddress,
+          propertyType,
+          propertyCapacity
+        } : undefined
       );
 
       // Handle ID upload for Landlords/Advertisers
@@ -179,7 +226,7 @@ const Signup = () => {
           <Sparkles className="w-4 h-4" />
           <span>{t("get_started_free")}</span>
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{t("how_will_you_use_roommates")}</h2>
+        <h2 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">{t("how_will_you_use_roommates")}</h2>
         <p className="text-gray-500 dark:text-gray-400">{t("choose_account_type")}</p>
       </div>
 
@@ -211,14 +258,14 @@ const Signup = () => {
             key={id}
             type="button"
             onClick={() => { setRole(id as any); setStep(2); }}
-            className="group relative flex items-center gap-4 p-5 rounded-2xl border-2 border-gray-100 dark:border-gray-800 hover:border-transparent hover:shadow-xl transition-all duration-300 text-left overflow-hidden"
+            className="relative flex items-center gap-4 p-5 overflow-hidden text-left transition-all duration-300 border-2 border-gray-100 group rounded-2xl dark:border-gray-800 hover:border-transparent hover:shadow-xl"
           >
             <div className={`absolute inset-0 bg-gradient-to-r ${gradient} opacity-0 group-hover:opacity-5 transition-opacity`} />
             <div className={`flex-shrink-0 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg group-hover:scale-110 transition-transform`}>
               <Icon className="h-7 w-7" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-gray-900 dark:text-white text-base">{title}</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{title}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{desc}</p>
             </div>
             <ArrowRight className={`h-5 w-5 text-gray-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all ${i18n.language === 'ar' ? 'rotate-180' : ''}`} />
@@ -227,9 +274,9 @@ const Signup = () => {
       </div>
 
       <div className="flex items-center gap-3 mb-6">
-        <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
         <span className="text-sm text-gray-400">{t("or_continue_with")}</span>
-        <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
       </div>
 
       <button
@@ -238,12 +285,12 @@ const Signup = () => {
         disabled={googleLoading}
         className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-all font-semibold text-gray-700 dark:text-gray-300 disabled:opacity-60"
       >
-        {googleLoading ? <div className="animate-spin h-5 w-5 border-2 border-indigo-500 border-t-transparent rounded-full" /> : <GoogleIcon />}
+        {googleLoading ? <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent" /> : <GoogleIcon />}
         <span>{t("signup_with_google")}</span>
       </button>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
-        {t("already_have_account")} <Link to="/login" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">{t("sign_in")}</Link>
+      <p className="mt-6 text-sm text-center text-gray-500">
+        {t("already_have_account")} <Link to="/login" className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline">{t("sign_in")}</Link>
       </p>
     </div>
   );
@@ -251,18 +298,18 @@ const Signup = () => {
   const renderStep2 = () => (
     <div className="animate-fadeInUp">
       <div className="mb-8">
-        <button type="button" onClick={() => setStep(1)} className="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 mb-6 transition-colors group">
+        <button type="button" onClick={() => setStep(1)} className="flex items-center gap-2 mb-6 text-sm text-gray-500 transition-colors hover:text-indigo-600 group">
           <ChevronLeft className={`w-4 h-4 group-hover:-translate-x-1 transition-transform ${i18n.language === 'ar' ? 'rotate-180' : ''}`} /> {t("back")}
         </button>
         <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-3 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 uppercase`}>
           {role === "USER" ? t("tenant_account") : role === "LANDLORD" ? t("landlord_account") : t("agent_account")}
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{t("create_account")}</h2>
+        <h2 className="mb-1 text-2xl font-bold text-gray-900 dark:text-white">{t("create_account")}</h2>
         <p className="text-sm text-gray-500">{t("your_security_matters")}</p>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-xs text-red-600 flex items-center gap-2">
+        <div className="flex items-center gap-2 p-3 mb-4 text-xs text-red-600 border border-red-200 rounded-xl bg-red-50 dark:bg-red-900/20 dark:border-red-800">
           <Shield className="w-4 h-4" /> {error}
         </div>
       )}
@@ -270,19 +317,19 @@ const Signup = () => {
       <div className="space-y-4">
         <div className="relative">
           <UserIcon className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input {...register("fullName")} placeholder={t("full_name")} className="w-full ps-10 pe-4 py-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 focus:border-indigo-500 focus:outline-none transition-all" />
+          <input {...register("fullName")} placeholder={t("full_name")} className="w-full py-3 transition-all bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
           {errors.fullName && <p className="mt-1 text-[10px] text-red-500">{errors.fullName.message}</p>}
         </div>
 
         <div className="relative">
           <Mail className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input {...register("email")} type="email" placeholder={t("email_address")} className="w-full ps-10 pe-4 py-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 focus:border-indigo-500 focus:outline-none transition-all" />
+          <input {...register("email")} type="email" placeholder={t("email_address")} className="w-full py-3 transition-all bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
           {errors.email && <p className="mt-1 text-[10px] text-red-500">{errors.email.message}</p>}
         </div>
 
         <div className="relative">
           <Phone className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input {...register("phoneNumber")} placeholder={t("phone_number_opt")} className="w-full ps-10 pe-4 py-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 focus:border-indigo-500 focus:outline-none transition-all" />
+          <input {...register("phoneNumber")} placeholder={t("phone_number_opt")} className="w-full py-3 transition-all bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
         </div>
 
         <div className="relative">
@@ -292,7 +339,7 @@ const Signup = () => {
             type={showPassword ? "text" : "password"}
             placeholder={t("password")}
             autoComplete="new-password"
-            className="w-full ps-10 pe-11 py-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 focus:border-indigo-500 focus:outline-none transition-all"
+            className="w-full py-3 transition-all bg-white border-2 border-gray-100 ps-10 pe-11 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none"
           />
           <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute end-3.5 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-indigo-600 p-1">
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -314,7 +361,7 @@ const Signup = () => {
 
         <div className="relative">
           <Lock className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          <input {...register("confirmPassword")} type={showConfirm ? "text" : "password"} placeholder={t("confirm_password")} className="w-full ps-10 pe-11 py-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 focus:border-indigo-500 focus:outline-none transition-all" />
+          <input {...register("confirmPassword")} type={showConfirm ? "text" : "password"} placeholder={t("confirm_password")} className="w-full py-3 transition-all bg-white border-2 border-gray-100 ps-10 pe-11 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
           <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute end-3.5 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-indigo-600 p-1">
             {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
@@ -335,18 +382,18 @@ const Signup = () => {
         </button>
 
         <div className="flex items-center gap-3 my-2">
-          <div className="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
+          <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
           <span className="text-[10px] text-gray-400 uppercase tracking-widest">{t("or")}</span>
-          <div className="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
+          <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
         </div>
 
         <button
           type="button"
           onClick={() => handleGoogleSignup()}
           disabled={googleLoading}
-          className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all text-sm font-semibold text-gray-600 dark:text-gray-400"
+          className="flex items-center justify-center w-full gap-3 py-3 text-sm font-semibold text-gray-600 transition-all border-2 border-gray-100 rounded-xl dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 dark:text-gray-400"
         >
-          {googleLoading ? <div className="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full" /> : <GoogleIcon />}
+          {googleLoading ? <div className="w-4 h-4 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent" /> : <GoogleIcon />}
           <span>{t("signup_with_google")}</span>
         </button>
       </div>
@@ -356,10 +403,10 @@ const Signup = () => {
   const renderStep3 = () => (
     <div className="animate-fadeInUp">
       <div className="mb-6">
-        <button type="button" onClick={() => setStep(2)} className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+        <button type="button" onClick={() => setStep(2)} className="flex items-center gap-2 mb-4 text-sm text-gray-500">
           <ChevronLeft className={`w-4 h-4 ${i18n.language === 'ar' ? 'rotate-180' : ''}`} /> {t("back")}
         </button>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+        <h2 className="mb-1 text-2xl font-bold text-gray-900 dark:text-white">
           {role === "USER" ? t("living_preferences") : role === "ADVERTISER" ? t("company_details") : t("identity_verification")}
         </h2>
         <p className="text-sm text-gray-500">{role === "USER" ? t("helping_match_roommates") : t("identity_desc")}</p>
@@ -368,50 +415,264 @@ const Signup = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {role === "USER" ? (
           <>
-            <div className="relative">
-              <GraduationCap className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input value={university} onChange={e => setUniversity(e.target.value)} placeholder={t("university_workplace_opt")} className="w-full ps-10 pe-4 py-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 focus:border-indigo-500 focus:outline-none transition-all" />
+            <div className="mb-6">
+              <h3 className="flex items-center gap-2 mb-4 font-bold text-gray-900 dark:text-white">
+                <GraduationCap className="w-5 h-5 text-indigo-600" />
+                {t("student_info")}
+              </h3>
+
+              <div className="space-y-4">
+                <div className="relative">
+                  <GraduationCap className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input value={university} onChange={e => setUniversity(e.target.value)} placeholder={t("university_workplace_opt")} className="w-full py-3 transition-all bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+                </div>
+
+                <div className="relative">
+                  <MapPin className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input value={preferences.preferredArea} onChange={e => setPreferences({...preferences, preferredArea: e.target.value})} placeholder={t("preferred_area")} className="w-full py-3 transition-all bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+                </div>
+
+                <div className="relative">
+                  <Clock className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <select value={preferences.workSchedule} onChange={e => setPreferences({...preferences, workSchedule: e.target.value})} className="w-full py-3 transition-all bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none">
+                    <option value="STUDENT">{t("student")}</option>
+                    <option value="WORKING">{t("working_professional")}</option>
+                    <option value="FLEXIBLE">{t("flexible_schedule")}</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div className="space-y-5 py-4">
-              <div>
-                <div className="flex justify-between text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">
-                  <span>{t("cleanliness")}</span>
-                  <span className="text-indigo-600">{preferences.cleanliness}/10</span>
+
+            <div className="mb-6">
+              <h3 className="flex items-center gap-2 mb-4 font-bold text-gray-900 dark:text-white">
+                <Heart className="w-5 h-5 text-purple-600" />
+                {t("lifestyle_preferences")}
+              </h3>
+
+              <div className="py-4 space-y-5">
+                <div>
+                  <div className="flex justify-between mb-2 text-xs font-bold text-gray-600 dark:text-gray-400">
+                    <span>{t("cleanliness")}</span>
+                    <span className="text-indigo-600">{preferences.cleanliness}/10</span>
+                  </div>
+                  <input type="range" min="1" max="10" value={preferences.cleanliness} onChange={e => setPreferences({ ...preferences, cleanliness: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
                 </div>
-                <input type="range" min="1" max="10" value={preferences.cleanliness} onChange={e => setPreferences({ ...preferences, cleanliness: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
-              </div>
-              <div>
-                <div className="flex justify-between text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">
-                  <span>{t("socializing")}</span>
-                  <span className="text-purple-600">{preferences.socializing}/10</span>
+
+                <div>
+                  <div className="flex justify-between mb-2 text-xs font-bold text-gray-600 dark:text-gray-400">
+                    <span>{t("socializing")}</span>
+                    <span className="text-purple-600">{preferences.socializing}/10</span>
+                  </div>
+                  <input type="range" min="1" max="10" value={preferences.socializing} onChange={e => setPreferences({ ...preferences, socializing: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-purple-600" />
                 </div>
-                <input type="range" min="1" max="10" value={preferences.socializing} onChange={e => setPreferences({ ...preferences, socializing: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-purple-600" />
-              </div>
-              <div>
-                <div className="flex justify-between text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">
-                  <span>{t("monthly_budget_egp")}</span>
-                  <span className="text-indigo-600">{preferences.budget} {t('egp')}</span>
+
+                <div>
+                  <div className="flex justify-between mb-2 text-xs font-bold text-gray-600 dark:text-gray-400">
+                    <span>{t("quiet_hours")}</span>
+                    <span className="text-blue-600">{preferences.quietHours}/10</span>
+                  </div>
+                  <input type="range" min="1" max="10" value={preferences.quietHours} onChange={e => setPreferences({ ...preferences, quietHours: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                 </div>
-                <input type="range" min="1000" max="20000" step="500" value={preferences.budget} onChange={e => setPreferences({ ...preferences, budget: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("smoking")}</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" checked={preferences.smoking} onChange={e => setPreferences({...preferences, smoking: e.target.checked})} />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("pets")}</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" checked={preferences.pets} onChange={e => setPreferences({...preferences, pets: e.target.checked})} />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between mb-2 text-xs font-bold text-gray-600 dark:text-gray-400">
+                    <span>{t("monthly_budget_egp")}</span>
+                    <span className="text-indigo-600">{preferences.budget} {t('egp')}</span>
+                  </div>
+                  <input type="range" min="1000" max="20000" step="500" value={preferences.budget} onChange={e => setPreferences({ ...preferences, budget: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                </div>
               </div>
             </div>
           </>
         ) : role === "ADVERTISER" ? (
           <>
-            <div className="relative">
-              <Building2 className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder={t("company_name")} className="w-full ps-10 pe-4 py-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+            <div className="mb-6">
+              <h3 className="flex items-center gap-2 mb-4 font-bold text-gray-900 dark:text-white">
+                <Briefcase className="w-5 h-5 text-blue-600" />
+                {t("company_information")}
+              </h3>
+
+              <div className="space-y-4">
+                <div className="relative">
+                  <Building2 className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder={t("company_name")} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+                </div>
+
+                <div className="relative">
+                  <Phone className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input value={companyPhone} onChange={e => setCompanyPhone(e.target.value)} placeholder={t("company_phone")} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+                </div>
+
+                <div className="relative">
+                  <Mail className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input value={companyEmail} onChange={e => setCompanyEmail(e.target.value)} placeholder={t("company_email")} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+                </div>
+
+                <div className="relative">
+                  <MapPin className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input value={companyAddress} onChange={e => setCompanyAddress(e.target.value)} placeholder={t("company_address")} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+                </div>
+
+                <div className="relative">
+                  <Shield className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input value={licenseNumber} onChange={e => setLicenseNumber(e.target.value)} placeholder={t("license_number")} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+                </div>
+
+                <div className="relative">
+                  <TrendingUp className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <select value={companySpecialization} onChange={e => setCompanySpecialization(e.target.value)} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none">
+                    <option value="RENTAL">{t("rental_properties")}</option>
+                    <option value="SALE">{t("sale_properties")}</option>
+                    <option value="BOTH">{t("both_rental_sale")}</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div className="relative">
-              <Shield className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input value={licenseNumber} onChange={e => setLicenseNumber(e.target.value)} placeholder={t("license_number")} className="w-full ps-10 pe-4 py-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+
+            <div className="mb-6">
+              <h3 className="flex items-center gap-2 mb-4 font-bold text-gray-900 dark:text-white">
+                <Building2 className="w-5 h-5 text-purple-600" />
+                {t("marketing_services")}
+              </h3>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("professional_photos")}</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" checked={marketingServices.photos} onChange={e => setMarketingServices({...marketingServices, photos: e.target.checked})} />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("virtual_tours")}</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" checked={marketingServices.vtours} onChange={e => setMarketingServices({...marketingServices, vtours: e.target.checked})} />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <textarea value={marketingDescription} onChange={e => setMarketingDescription(e.target.value)} placeholder={t("marketing_description")} rows={3} className="w-full p-3 transition-all bg-white border-2 border-gray-100 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none"></textarea>
+                </div>
+              </div>
             </div>
           </>
         ) : (
-          <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800 flex items-start gap-3">
-            <Shield className="w-5 h-5 text-indigo-600 mt-0.5" />
-            <p className="text-sm text-indigo-700 dark:text-indigo-400">{t("verified_landlords_benefit")}</p>
-          </div>
+          <>
+            <div className="mb-6">
+              <h3 className="flex items-center gap-2 mb-4 font-bold text-gray-900 dark:text-white">
+                <Building2 className="w-5 h-5 text-green-600" />
+                {t("property_management")}
+              </h3>
+
+              <div className="space-y-4">
+                <div className="relative">
+                  <Building2 className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input value={propertyName} onChange={e => setPropertyName(e.target.value)} placeholder={t("property_name")} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+                </div>
+
+                <div className="relative">
+                  <MapPin className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input value={propertyAddress} onChange={e => setPropertyAddress(e.target.value)} placeholder={t("property_address")} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="relative">
+                    <Home className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <select value={propertyType} onChange={e => setPropertyType(e.target.value)} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none">
+                      <option value="APARTMENT">{t("apartment")}</option>
+                      <option value="VILLA">{t("villa")}</option>
+                      <option value="STUDIO">{t("studio")}</option>
+                      <option value="FLOOR">{t("floor")}</option>
+                    </select>
+                  </div>
+
+                  <div className="relative">
+                    <Users className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <select value={propertyCapacity} onChange={e => setPropertyCapacity(e.target.value)} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none">
+                      <option value="1">{t("single_person")}</option>
+                      <option value="2">{t("two_persons")}</option>
+                      <option value="3">{t("three_persons")}</option>
+                      <option value="4">{t("four_persons")}</option>
+                      <option value="5">{t("five_plus_persons")}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <Shield className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input value={licenseNumber} onChange={e => setLicenseNumber(e.target.value)} placeholder={t("license_number")} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none" />
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="flex items-center gap-2 mb-4 font-bold text-gray-900 dark:text-white">
+                <Users className="w-5 h-5 text-purple-600" />
+                {t("tenant_preferences")}
+              </h3>
+
+              <div className="space-y-4">
+                <div className="relative">
+                  <GraduationCap className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <select value={tenantType} onChange={e => setTenantType(e.target.value)} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none">
+                    <option value="STUDENT">{t("student")}</option>
+                    <option value="PROFESSIONAL">{t("professional")}</option>
+                    <option value="FAMILY">{t("family")}</option>
+                    <option value="ANY">{t("any_type")}</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("students_only")}</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" checked={tenantPreferences.studentsOnly} onChange={e => setTenantPreferences({...tenantPreferences, studentsOnly: e.target.checked})} />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("families_only")}</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" checked={tenantPreferences.familiesOnly} onChange={e => setTenantPreferences({...tenantPreferences, familiesOnly: e.target.checked})} />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <Clock className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <select value={tenantPreferences.quietHours} onChange={e => setTenantPreferences({...tenantPreferences, quietHours: e.target.value})} className="w-full py-3 bg-white border-2 border-gray-100 ps-10 pe-4 rounded-xl dark:border-gray-800 dark:bg-gray-900 focus:border-indigo-500 focus:outline-none">
+                    <option value="FLEXIBLE">{t("flexible_schedule")}</option>
+                    <option value="STRICT">{t("strict_hours")}</option>
+                    <option value="MODERATE">{t("moderate_hours")}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {(role === "LANDLORD" || role === "ADVERTISER") && (
@@ -430,7 +691,7 @@ const Signup = () => {
         )}
 
         <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50">
-          {isSubmitting ? <div className="animate-spin h-5 w-5 border-2 border-white/30 border-t-white rounded-full" /> : <><CheckCircle className="w-5 h-5" /> {t("complete_registration")}</>}
+          {isSubmitting ? <div className="w-5 h-5 border-2 rounded-full animate-spin border-white/30 border-t-white" /> : <><CheckCircle className="w-5 h-5" /> {t("complete_registration")}</>}
         </button>
 
         {(role === "LANDLORD" || role === "ADVERTISER") && (
@@ -441,18 +702,19 @@ const Signup = () => {
   );
 
   return (
-    <div className="min-h-screen flex selection:bg-indigo-100 selection:text-indigo-900">
-      {/* ─── DARK BRANDING PANEL ─── */}
-      <div className="hidden lg:flex lg:w-[40%] xl:w-[45%] relative flex-col items-center justify-center p-12 overflow-hidden bg-[#0A0D14]">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_20%,rgba(79,70,22px,0.15)_0%,transparent_50%)]" />
-        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_80%_80%,rgba(168,85,247,0.1)_0%,transparent_50%)]" />
+    <div className="flex min-h-screen selection:bg-indigo-100 selection:text-indigo-900">
+      {/* ─── Left Branding Panel ─── */}
+      <div className="relative flex-col items-center justify-center hidden p-12 overflow-hidden lg:flex lg:w-2/5 xl:w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600">
+        <div className="absolute top-[-20%] left-[-10%] w-96 h-96 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-80 h-80 rounded-full bg-pink-400/20 blur-3xl" />
 
-        <div className="relative z-10 w-full max-w-sm">
-          <Link to="/" className="flex items-center gap-3 mb-16 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+        <div className="relative z-10 max-w-md text-center text-white">
+          {/* Logo */}
+          <Link to="/" className="flex items-center justify-center gap-3 mb-12 group">
+            <div className="flex items-center justify-center w-12 h-12 transition-transform shadow-xl rounded-2xl bg-white/20 backdrop-blur-sm group-hover:scale-110">
               <Home className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-black text-white tracking-tight uppercase">Roommates</span>
+            <span className="text-2xl font-bold tracking-tight uppercase">{t('app_name')}</span>
           </Link>
 
           <div className="space-y-12">
@@ -461,33 +723,33 @@ const Signup = () => {
               { icon: Shield, title: t("safe_secure_accounts"), desc: t("trust_is_key") },
               { icon: Heart, title: t("community_first"), desc: t("find_compatible_fast") },
             ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex gap-5 group">
-                <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-indigo-500 transition-all duration-300">
-                  <Icon className="w-6 h-6 text-indigo-400 group-hover:text-white" />
+              <div key={title} className="flex gap-5 text-left group">
+                <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 transition-all duration-300 border rounded-2xl bg-white/10 border-white/20 group-hover:bg-white/20">
+                  <Icon className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-lg mb-1">{title}</h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+                  <h3 className="mb-1 text-lg font-bold text-white">{title}</h3>
+                  <p className="text-sm leading-relaxed text-white/70">{desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-20 p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl">
-            <p className="text-white/80 text-sm italic mb-4 leading-relaxed font-medium">"{t("sarah_quote")}"</p>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border border-white/20" />
-              <div>
-                <p className="text-white font-bold text-xs uppercase tracking-wider">{t("sarah_m")}</p>
-                <p className="text-indigo-400 text-[10px] font-black uppercase tracking-widest">{t("sarah_desc")}</p>
+          <div className="p-6 mt-20 border rounded-3xl bg-white/10 border-white/20 backdrop-blur-xl">
+            <p className="mb-4 text-sm italic font-medium leading-relaxed text-white/80">"{t("sarah_quote")}"</p>
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-10 h-10 border rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-white/20" />
+              <div className="text-left">
+                <p className="text-xs font-bold tracking-wider text-white uppercase">{t("sarah_m")}</p>
+                <p className="text-white/60 text-[10px] font-black uppercase tracking-widest">{t("sarah_desc")}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ─── WHITE FORM PANEL ─── */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 bg-white dark:bg-[#0A0D14] overflow-y-auto">
+      {/* ─── Right Form Panel ─── */}
+      <div className="flex flex-col items-center justify-center flex-1 px-6 py-12 overflow-y-auto bg-white dark:bg-gray-950">
         <div className="w-full max-w-sm">
           {step > 1 && (
             <div className="mb-10">
@@ -495,8 +757,8 @@ const Signup = () => {
                 <span>{t("step")} {step} / {totalSteps}</span>
                 <span className="text-indigo-600">{Math.round(progress)}%</span>
               </div>
-              <div className="h-1 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-600 rounded-full transition-all duration-700 ease-out" style={{ width: `${progress}%` }} />
+              <div className="h-1 overflow-hidden bg-gray-100 rounded-full dark:bg-white/5">
+                <div className="h-full transition-all duration-700 ease-out bg-indigo-600 rounded-full" style={{ width: `${progress}%` }} />
               </div>
             </div>
           )}

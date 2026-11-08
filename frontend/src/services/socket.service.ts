@@ -10,8 +10,9 @@ class SocketService {
     if (this.socket?.connected) return;
 
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    const socketUrl = apiUrl.replace(/\/api$/, "");
 
-    this.socket = io(apiUrl, {
+    this.socket = io(socketUrl, {
       auth: { token },
       transports: ["polling", "websocket"],
       reconnection: true,

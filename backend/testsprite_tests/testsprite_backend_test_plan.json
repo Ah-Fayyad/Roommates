@@ -1,0 +1,27 @@
+[
+  {
+    "id": "TC001",
+    "title": "post api auth login with valid credentials",
+    "description": "Test the POST /api/auth/login endpoint with valid email and password to verify successful login and receipt of JWT token."
+  },
+  {
+    "id": "TC002",
+    "title": "post api auth signup with valid data",
+    "description": "Test the POST /api/auth/signup endpoint with valid email, password, and name to verify successful user registration and receipt of created user id."
+  },
+  {
+    "id": "TC003",
+    "title": "post api auth signup with missing password",
+    "description": "Test the POST /api/auth/signup endpoint with missing password field to verify it returns a 400 validation error."
+  },
+  {
+    "id": "TC004",
+    "title": "post api auth login with incorrect password",
+    "description": "Test the POST /api/auth/login endpoint with incorrect password to verify it returns a 401 authentication error."
+  },
+  {
+    "id": "TC005",
+    "title": "get api listings with valid request",
+    "description": "Test the GET /api/listings endpoint without authentication to verify it returns 200 with an array of listings including project_id, name, last_scan_at, and status."
+  }
+]

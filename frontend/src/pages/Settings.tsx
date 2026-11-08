@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "../components/ui/Button";
+import { Link } from "react-router-dom";
 import { Input } from "../components/ui/Input";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -381,6 +382,47 @@ const Settings = () => {
                   {i18n.language === "en" ? "العربية" : "English"}
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Legal & Privacy Section */}
+          <div className="glass animate-fadeInUp stagger-5 rounded-2xl p-6">
+            <div className="mb-6 flex items-center gap-2">
+              <Lock className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {t("legal_privacy_settings", "Legal & Privacy")}
+              </h2>
+            </div>
+
+            <div className="space-y-4">
+              <Link
+                to="/privacy"
+                className="flex items-center justify-between rounded-xl border-2 border-gray-200 p-4 transition-all hover:border-indigo-500 hover:bg-indigo-50 dark:border-gray-700 dark:hover:bg-indigo-900/20"
+              >
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-white">
+                    {t("privacy_policy")}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    {t("review_privacy_desc", "Review how we handle your data.")}
+                  </div>
+                </div>
+                <Globe className="h-5 w-5 text-gray-400" />
+              </Link>
+              <Link
+                to="/terms"
+                className="flex items-center justify-between rounded-xl border-2 border-gray-200 p-4 transition-all hover:border-indigo-500 hover:bg-indigo-50 dark:border-gray-700 dark:hover:bg-indigo-900/20"
+              >
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-white">
+                    {t("terms_of_service")}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    {t("review_terms_desc", "Read our terms of service.")}
+                  </div>
+                </div>
+                <Globe className="h-5 w-5 text-gray-400" />
+              </Link>
             </div>
           </div>
 

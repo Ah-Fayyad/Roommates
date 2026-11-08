@@ -1,5 +1,5 @@
-export const API_BASE_URL = "/api";
-export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "74034125184-b7jsjntrfcul581m9ko8m7km36jsqs92.apps.googleusercontent.com";
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "74034125184-n95sacppuvg1tlbokks9q8bi1lr1rs1b.apps.googleusercontent.com";
 export const APP_NAME = import.meta.env.VITE_APP_NAME || "Roommates Finder";
 export const IS_PRODUCTION = import.meta.env.VITE_ENVIRONMENT === "production";
 export const IS_DEVELOPMENT =

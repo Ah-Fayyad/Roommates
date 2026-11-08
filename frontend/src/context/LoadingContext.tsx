@@ -15,15 +15,8 @@ export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({
   const location = useLocation();
 
   useEffect(() => {
-    // Show loading when location changes
-    setIsLoading(true);
-    
-    // Hide loading after a short delay (page rendered)
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
+    // Only clear loading state dynamically if a route changes and gets stuck
+    setIsLoading(false);
   }, [location]);
 
   return (

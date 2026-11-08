@@ -29,7 +29,7 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('overview');
     const [stats, setStats] = useState<DashboardStats>({

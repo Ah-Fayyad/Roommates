@@ -101,15 +101,15 @@ const Onboarding = () => {
                     {uni}
                   </button>
                 ))}
-                <button
-                  onClick={() => setUniversity("Other")}
-                  className={`px-3 py-2 text-sm rounded-lg border-2 transition-all ${university === "Other" || (![t('uni_cairo'), t('uni_ain_shams'), t('uni_auc'), t('uni_guc'), t('uni_bue'), t('uni_aou'), t('uni_must'), t('uni_msa')].includes(university) && university !== "")
-                    ? "border-indigo-600 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40"
-                    : "border-gray-200 hover:border-indigo-300 dark:border-gray-700 dark:text-gray-300"
-                    }`}
-                >
-                  {t('other')}
-                </button>
+                  <button
+                    onClick={() => setUniversity("Other")}
+                    className={`px-3 py-2 text-sm rounded-lg border-2 transition-all ${university === "Other" || (![t('uni_cairo'), t('uni_ain_shams'), t('uni_auc'), t('uni_guc'), t('uni_bue'), t('uni_aou'), t('uni_must'), t('uni_msa')].includes(university) && university !== "")
+                      ? "border-indigo-600 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40"
+                      : "border-gray-200 hover:border-indigo-300 dark:border-gray-700 dark:text-gray-300"
+                      }`}
+                  >
+                    {t('other')}
+                  </button>
               </div>
               {(university === "Other" || (![t('uni_cairo'), t('uni_ain_shams'), t('uni_auc'), t('uni_guc'), t('uni_bue'), t('uni_aou'), t('uni_must'), t('uni_msa')].includes(university) && university !== "")) && (
                 <input
@@ -126,14 +126,14 @@ const Onboarding = () => {
               <label className="block mb-2 font-semibold text-gray-900 dark:text-white">{t('short_bio')}</label>
               <div className="flex flex-wrap gap-2 mb-3">
                 {[
-                  { key: 'final_year', val: "Final year student 🎓" },
-                  { key: 'pro_worker', val: "Working professional 💼" },
-                  { key: 'quiet_clean', val: "Quiet and clean ✨" },
-                  { key: 'from_gov', val: "Coming from another governorate 🚆" },
-                  { key: 'military_need', val: "Need a place near military training 🪖" },
-                  { key: 'long_commute', val: "Long distance commuter 📍" },
-                  { key: 'quiet_study', val: "Looking for a quiet study environment 📚" },
-                  { key: 'non_smoker_pets', val: "Non-smoker and pet friendly 🐾" }
+                  { key: 'final_year', emoji: "🎓" },
+                  { key: 'pro_worker', emoji: "💼" },
+                  { key: 'quiet_clean', emoji: "✨" },
+                  { key: 'from_gov', emoji: "🚆" },
+                  { key: 'military_need', emoji: "🪖" },
+                  { key: 'long_commute', emoji: "📍" },
+                  { key: 'quiet_study', emoji: "📚" },
+                  { key: 'non_smoker_pets', emoji: "🐾" }
                 ].map(tag => (
                   <button
                     key={tag.key}

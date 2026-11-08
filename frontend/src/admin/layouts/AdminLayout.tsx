@@ -15,7 +15,8 @@ import {
     ExternalLink,
     Menu,
     X,
-    Activity
+    Activity,
+    Globe
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -183,9 +184,22 @@ const AdminLayout = () => {
                         </div>
 
                         <div className="flex items-center gap-2 sm:gap-4">
+                            {/* Language Switcher */}
+                            <button
+                                onClick={() => {
+                                    const newLang = i18n.language === 'en' ? 'ar' : 'en';
+                                    i18n.changeLanguage(newLang);
+                                    document.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+                                }}
+                                className="flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2 text-sm font-bold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-all border border-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-800 dark:hover:bg-indigo-900/20"
+                            >
+                                <Globe size={18} />
+                                <span className="hidden sm:inline">{i18n.language === 'en' ? 'العربية' : 'English'}</span>
+                            </button>
+
                             <Link to="/admin/notifications" className="relative p-2.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all border border-gray-100 dark:border-gray-800">
                                 <Bell size={20} />
-                                <span className="absolute top-2.5 end-2.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white dark:border-gray-900"></span>
+                                <span className={`absolute top-2.5 ${isArabic ? 'left-2.5' : 'right-2.5'} h-2 w-2 rounded-full bg-red-500 border-2 border-white dark:border-gray-900`}></span>
                             </Link>
 
                             <div className="h-8 w-px bg-gray-100 dark:bg-gray-800 mx-1"></div>

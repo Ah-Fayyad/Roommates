@@ -32,47 +32,13 @@ const CreateListing = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(isEditMode);
 
-  // Check for verification (Required for Landlords and Advertisers)
+  // Derived values for verification
   const isLandlordOrAdvertiser = user?.role === "LANDLORD" || user?.role === "ADVERTISER";
   const needsVerification = isLandlordOrAdvertiser && !user?.isVerified;
 
-  if (needsVerification) {
-    return (
-      <div className="min-h-screen py-12 px-4 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-md w-full glass p-8 rounded-3xl text-center shadow-2xl border border-amber-200/50 dark:border-amber-900/30">
-          <div className="w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Sparkles className="w-10 h-10 text-amber-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            {t('verification_required')}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
-            {t('verification_required_desc')}
-          </p>
-          <div className="space-y-3">
-            <Button
-              variant="gradient"
-              className="w-full py-6"
-              onClick={() => navigate("/profile")}
-            >
-              {t('go_to_profile_to_verify')}
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full"
-              onClick={() => navigate("/")}
-            >
-              {t('back_to_home')}
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const [formData, setFormData] = useState({
     title: "",
-    location: "",
+    location: "downtown", // Default so validation never fails
     size: 20,
     roomType: "private" as "private" | "shared" | "studio",
     price: 0,
@@ -92,49 +58,22 @@ const CreateListing = () => {
     googleMapsUrl: "",
   });
 
-  const handleGetLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setFormData((prev) => ({
-            ...prev,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            location: `Lat: ${position.coords.latitude.toFixed(
-              4,
-            )}, Long: ${position.coords.longitude.toFixed(4)}`,
-          }));
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          alert(t('could_not_get_location'));
-        },
-      );
-    } else {
-      alert(t('geolocation_not_supported'));
-    }
+  // Auto-detect area from coordinates (rough bounding boxes for Egyptian regions)
+  const detectAreaFromCoords = (lat: number, lng: number): string => {
+    // Cairo center approx 30.044, 31.235
+    // These are rough zones — adjust as needed
+    if (lat >= 30.04 && lat <= 30.08 && lng >= 31.22 && lng <= 31.27) return 'downtown';
+    if (lat >= 30.00 && lat <= 30.05 && lng >= 31.20 && lng <= 31.24) return 'university';
+    if (lat >= 30.01 && lat <= 30.04 && lng >= 31.15 && lng <= 31.20) return 'campus';
+    if (lat >= 30.00 && lat <= 30.02 && lng >= 31.38 && lng <= 31.50) return 'uptown'; // New Cairo
+    if (lat >= 30.05 && lat <= 30.08 && lng >= 31.00 && lng <= 31.15) return 'uptown'; // 6 October
+    // Default fallback
+    return 'suburb';
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        type === "checkbox"
-          ? (e.target as HTMLInputElement).checked
-          : type === "number"
-            ? Number(value)
-            : value,
-    }));
-  };
-
-  const handlePriceSelect = (price: number) => {
-    setFormData((prev) => ({ ...prev, price }));
-  };
+  const [images, setImages] = useState<File[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -191,6 +130,42 @@ const CreateListing = () => {
     fetchListing();
   }, [id, isEditMode]);
 
+  if (needsVerification) {
+    return (
+      <div className="min-h-screen py-12 px-4 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-md w-full glass p-8 rounded-3xl text-center shadow-2xl border border-amber-200/50 dark:border-amber-900/30">
+          <div className="w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Sparkles className="w-10 h-10 text-amber-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            {t('verification_required')}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+            {t('verification_required_desc')}
+          </p>
+          <div className="space-y-3">
+            <Button
+              variant="gradient"
+              className="w-full py-6"
+              onClick={() => navigate("/profile")}
+            >
+              {t('go_to_profile_to_verify')}
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full"
+              onClick={() => navigate("/")}
+            >
+              {t('back_to_home')}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -199,10 +174,49 @@ const CreateListing = () => {
     );
   }
 
-  const [images, setImages] = useState<File[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
+  const handleGetLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setFormData((prev) => ({
+            ...prev,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            location: `Lat: ${position.coords.latitude.toFixed(
+              4,
+            )}, Long: ${position.coords.longitude.toFixed(4)}`,
+          }));
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          alert(t('could_not_get_location'));
+        },
+      );
+    } else {
+      alert(t('geolocation_not_supported'));
+    }
+  };
 
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox"
+          ? (e.target as HTMLInputElement).checked
+          : type === "number"
+            ? Number(value)
+            : value,
+    }));
+  };
+
+  const handlePriceSelect = (price: number) => {
+    setFormData((prev) => ({ ...prev, price }));
+  };
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) {
       console.warn("No files selected");
@@ -278,11 +292,7 @@ const CreateListing = () => {
         setIsSubmitting(false);
         return;
       }
-      if (!formData.location) {
-        setError(t('location_required'));
-        setIsSubmitting(false);
-        return;
-      }
+      // Location area always has a default — no blocking needed
       if (formData.price <= 0) {
         setError(t('price_greater_than_0'));
         setIsSubmitting(false);
@@ -477,41 +487,68 @@ const CreateListing = () => {
                     <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       {t('location')}
                     </label>
-                    <div className="mb-4 grid gap-5 md:grid-cols-2">
+
+                    {/* Map pin confirmation badge */}
+                    {formData.latitude && formData.longitude ? (
+                      <div className="mb-3 flex items-center gap-3 rounded-2xl border-2 border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 px-4 py-3 animate-fadeIn">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-green-700 dark:text-green-400">{t('pin_confirmed', 'Location Pin Set!')}</p>
+                          <p className="text-xs text-green-600 dark:text-green-500 font-mono">
+                            {formData.latitude.toFixed(5)}, {formData.longitude.toFixed(5)}
+                          </p>
+                        </div>
+                        <div className="ms-auto text-xs text-green-600 dark:text-green-400 font-bold uppercase bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded-lg">
+                          {t(formData.location)} ✓
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-3 flex items-center gap-3 rounded-2xl border-2 border-dashed border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 animate-pulse">
+                        <MapPin className="h-5 w-5 text-amber-500 shrink-0" />
+                        <p className="text-sm text-amber-700 dark:text-amber-400 font-medium">
+                          {t('click_map_exact_location', 'Click on the map below to pin your exact location')}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Area Dropdown + auto-detect note */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('general_area', 'General Area')}
+                        </span>
+                        {formData.latitude ? (
+                          <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">
+                            ✨ {t('auto_detected', 'Auto-detected from map')}
+                          </span>
+                        ) : null}
+                      </div>
                       <select
                         name="location"
                         value={formData.location}
                         onChange={handleChange}
-                        className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 transition-all focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                        required
+                        className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 transition-all focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white font-medium"
                       >
-                        <option value="">{t('select_general_area')}</option>
                         <option value="downtown">{t('downtown')}</option>
                         <option value="university">{t('university_area')}</option>
                         <option value="campus">{t('campus')}</option>
                         <option value="suburb">{t('suburb')}</option>
                         <option value="uptown">{t('uptown')}</option>
                       </select>
-                      <div className="flex items-center gap-2 rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
-                        <MapPin className="h-5 w-5 text-gray-500" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {formData.latitude && formData.longitude
-                            ? `${formData.latitude.toFixed(
-                              4,
-                            )}, ${formData.longitude.toFixed(4)}`
-                            : t('select_on_map')}
-                        </span>
-                      </div>
                     </div>
-                    <div className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                      {t('click_map_exact_location')}
-                    </div>
+
                     <LocationPicker
                       onLocationSelect={(lat, lng) => {
+                        const detectedArea = detectAreaFromCoords(lat, lng);
                         setFormData((prev) => ({
                           ...prev,
                           latitude: lat,
                           longitude: lng,
+                          location: detectedArea,
                         }));
                       }}
                       initialLat={formData.latitude || 30.0444}
@@ -816,7 +853,7 @@ const CreateListing = () => {
                         {t('location')}:
                       </span>
                       <span className="font-semibold capitalize text-gray-900 dark:text-white">
-                        {formData.location}
+                        {t(formData.location)}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -824,7 +861,7 @@ const CreateListing = () => {
                         {t('room_type_label')}:
                       </span>
                       <span className="font-semibold capitalize text-gray-900 dark:text-white">
-                        {formData.roomType}
+                        {t(formData.roomType)}
                       </span>
                     </div>
                     <div className="flex justify-between">

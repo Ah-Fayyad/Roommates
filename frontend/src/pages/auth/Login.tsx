@@ -91,7 +91,7 @@ const Login = () => {
             <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-xl">
               <Home className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold tracking-tight">Roommates</span>
+            <span className="text-2xl font-bold tracking-tight">{t('app_name')}</span>
           </div>
 
           {/* Welcome text */}
@@ -150,7 +150,7 @@ const Login = () => {
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
                 <Home className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-gray-900 dark:text-white">Roommates</span>
+              <span className="font-bold text-gray-900 dark:text-white">{t('app_name')}</span>
             </div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{t('welcome_back_title')}</h2>
             <p className="text-gray-500 dark:text-gray-400">{t('sign_in_account')}</p>

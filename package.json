@@ -12,7 +12,8 @@
         "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
         "db:push": "cd backend && npx prisma db push",
         "db:studio": "cd backend && npx prisma studio",
-        "db:generate": "cd backend && npx prisma generate"
+        "db:generate": "cd backend && npx prisma generate",
+        "seed-users": "cd backend && npm run seed-users"
     },
     "keywords": [
         "roommates",
