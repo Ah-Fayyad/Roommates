@@ -8,7 +8,7 @@
 
 ### 🚀 الموقع المباشر | Live Demo
 
-**[🌐 زيارة الموقع المباشر: https://roommates-frontend.netlify.app/](https://roommates-frontend.netlify.app/)**
+**[🌐 زيارة الموقع المباشر: https://roommates-frontend.netlify.app/](https://roommates.netlify.app/)**
 
 ---
 
