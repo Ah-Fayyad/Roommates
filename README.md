@@ -9,7 +9,7 @@
 ### 🚀 الموقع المباشر | Live Demo
 
 **[🌐 زيارة الموقع المباشر: https://roommate
-s.netlify.app/](https://roommats.netlify.app/)**
+s.netlify.app/](https://roommats.netlify.app)**
 
 ---
 
